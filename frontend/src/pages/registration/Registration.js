@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { FaGoogle, FaGithub, FaFacebook } from "react-icons/fa"; // Import icons
 
 export default function Registration() {
   const [firstName, setFname] = useState("");
@@ -13,7 +14,19 @@ export default function Registration() {
   const [address, setAddress] = useState("");
   const [error, setError] = useState("");
 
-  const navigation = useNavigate();
+  const navigate = useNavigate();
+
+  const google = () => {
+    window.open("http://localhost:5000/auth/google", "_self");
+  };
+
+  const github = () => {
+    window.open("http://localhost:5000/auth/github", "_self");
+  };
+
+  const facebook = () => {
+    window.open("http://localhost:5000/auth/facebook", "_self");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +36,7 @@ export default function Registration() {
       return;
     }
     try {
-        console.log("heeee"+gender)
+      console.log("heeee" + gender);
       const response = await axios.post("http://localhost:5050/user", {
         firstName,
         lastName,
@@ -34,9 +47,9 @@ export default function Registration() {
         address,
       });
       console.log(response);
-      navigation("/login");
+      navigate("/login");
     } catch (error) {
-      setError("Error with registration")
+      setError("Error with registration");
       console.log(error);
     }
   };
@@ -105,7 +118,7 @@ export default function Registration() {
                     id="gender"
                     name="gender"
                     required
-                    onChange={(e) => console.log(e.target.value)}
+                    onChange={(e) => setGender(e.target.value)}
                     className="block w-40 rounded-md border-0 px-1.5 py-1.5 text-center text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 max-sm:w-32 sm:text-sm sm:leading-6"
                   >
                     <option value="Male">Male</option>
@@ -224,14 +237,44 @@ export default function Registration() {
               >
                 Register
               </button>
+            </div>
+
+            <div className="mt-6 flex items-center justify-center">
+              <hr className="w-full border-gray-300" />
+              <span className="mx-2 text-gray-500">OR</span>
+              <hr className="w-full border-gray-300" />
+            </div>
+
+            <div className="mt-6 space-y-3">
               <button
-                type="button"
-                onClick={() => {navigation("/login")}}
-                className="mt-2 flex w-full justify-center rounded-md bg-red-500 px-1.5 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                onClick={google}
+                className="flex w-full justify-center items-center rounded-md bg-red-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-red-600"
               >
-                Back
+                <FaGoogle className="mr-2" /> Register with Google
+              </button>
+              <button
+                onClick={github}
+                className="flex w-full justify-center items-center rounded-md bg-gray-800 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-900"
+              >
+                <FaGithub className="mr-2" /> Register with GitHub
+              </button>
+              <button
+                onClick={facebook}
+                className="flex w-full justify-center items-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-700"
+              >
+                <FaFacebook className="mr-2" /> Register with Facebook
               </button>
             </div>
+            <p className="mt-10 text-center text-sm text-gray-500">
+              Already have an account?{" "}
+              <a
+                href=""
+                className="font-semibold pl-2 leading-6 text-indigo-600 hover:text-indigo-500"
+                onClick={() => navigate("/login")}
+              >
+                Login here
+              </a>
+            </p>
           </form>
         </div>
       </div>

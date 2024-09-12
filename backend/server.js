@@ -2,6 +2,8 @@ import express, { json } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import userRouter from "./Routers/userRouter.js";
+import passport from "./passport.js";
+import cookieSession from "cookie-session";
 
 import membershipRouter from "./Routers/memberShipRouter.js";
 import membershipTypeRouter from "./Routers/membershipTypeRouter.js";
@@ -12,12 +14,13 @@ import paymentRouter from "./Routers/paymentRouter.js";
 import Stripe from "stripe";
 import historyRouter from "./Routers/historyRouter.js";
 import savedwordRouter from "./Routers/SavedWordRouter.js";
+import authRoute from "./Routers/auth.js";
 
 import checkoutRouter from "./Routers/checkoutRouter.js";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 5050;
+const PORT = process.env.PORT || 5000;
 const app = express();
 // const stripe = require('stripe')('YOUR_STRIPE_SECRET_KEY');
 
@@ -32,11 +35,26 @@ const stripeInstance = new Stripe(stripeSecretKey);
 //   [2, { priceInCents: 2000, name: "wcwecwc" }],
 // ]);
 
-app.use(cors());
+app.use(
+  cookieSession({ name: "session", keys: ["lama"], maxAge: 24 * 60 * 60 * 100 })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(express.static("public"));
 
 // Routes
+app.use("/auth", authRoute);
 app.use("/membership", membershipRouter);
 app.use("/membershipType", membershipTypeRouter);
 app.use("/user", userRouter);

@@ -2,8 +2,21 @@ import React, { useState } from "react";
 import axios from "axios";
 import Jwt_decode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
+import { FaGoogle, FaGithub, FaFacebook } from "react-icons/fa"; // Import icons
 
 export default function Login() {
+  const google = () => {
+    window.open("http://localhost:5000/auth/google", "_self");
+  };
+
+  const github = () => {
+    window.open("http://localhost:5000/auth/github", "_self");
+  };
+
+  const facebook = () => {
+    window.open("http://localhost:5000/auth/facebook", "_self");
+  };
+
   const [user, setUser] = useState(null);
   const [email, setEmail] = useState("");
   const [passwordHash, setPasswordHash] = useState("");
@@ -40,7 +53,7 @@ export default function Login() {
       const decodedToken = Jwt_decode(user.accessToken);
       if (decodedToken.exp * 1000 < currentDate.getTime()) {
         const data = await refreashToken();
-        config.headers["authorization"] = `Bearer ${data.accessToken}`;
+        config.headers["authorization"] = `Bearer {data.accessToken}`;
       }
       return config;
     },
@@ -70,22 +83,21 @@ export default function Login() {
             setsuccess(true);
             seterror(false);
           }
-          console.log(res.data)
-          const {accessToken, refreshToken} = { ...res.data };
-          console.log(accessToken)
-          console.log(refreshToken)
+          console.log(res.data);
+          const { accessToken, refreshToken } = { ...res.data };
+          console.log(accessToken);
+          console.log(refreshToken);
           localStorage.setItem("accessToken", accessToken);
           localStorage.setItem("refreshToken", refreshToken);
 
           console.log(newUser.user.firstName);
-          if(newUser.user.lastName === "superadmin"){
-            console.log("i am adim")
+          if (newUser.user.lastName === "superadmin") {
+            console.log("i am adim");
             navigate("/adminController");
-          }else{
-            console.log("i am user")
+          } else {
+            console.log("i am user");
             navigate("/");
           }
-          
         });
     } catch (error) {
       seterror("Invalid email or password");
@@ -167,6 +179,33 @@ export default function Login() {
                   {error && <div className="error">{error}</div>}
                 </div>
               </form>
+
+              <div className="mt-6 flex items-center justify-center">
+                <hr className="w-full border-gray-300" />
+                <span className="mx-2 text-gray-500">OR</span>
+                <hr className="w-full border-gray-300" />
+              </div>
+
+              <div className="mt-6 space-y-3">
+                <button
+                  onClick={google}
+                  className="flex w-full justify-center items-center rounded-md bg-red-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-red-600"
+                >
+                  <FaGoogle className="mr-2" /> Login with Google
+                </button>
+                <button
+                  onClick={github}
+                  className="flex w-full justify-center items-center rounded-md bg-gray-800 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-900"
+                >
+                  <FaGithub className="mr-2" /> Login with GitHub
+                </button>
+                <button
+                  onClick={facebook}
+                  className="flex w-full justify-center items-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-700"
+                >
+                  <FaFacebook className="mr-2" /> Login with Facebook
+                </button>
+              </div>
 
               <p className="mt-10 text-center text-sm text-gray-500">
                 Not a member?

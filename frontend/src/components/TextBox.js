@@ -26,12 +26,12 @@ const TextBox = ({
       if (isWordSaved) {
         // If the word is saved, remove it from the database
         await axios.delete(
-          `http://localhost:5050/savedWord/delete?textToTranslate=${textToTranslate}`
+          `http://localhost:5000/savedWord/delete?textToTranslate=${textToTranslate}`
         );
         setIsWordSaved(false); // Toggle the state to unfilled
       } else {
         // If the word is not saved, save it to the database
-        await axios.post("http://localhost:5050/savedWord/saved", dataToSave);
+        await axios.post("http://localhost:5000/savedWord/saved", dataToSave);
         console.log(dataToSave);
         setIsWordSaved(true); // Toggle the state to filled
       }

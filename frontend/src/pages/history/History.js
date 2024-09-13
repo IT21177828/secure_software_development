@@ -1,38 +1,39 @@
-import React, { useState , useEffect } from 'react';
-import 'tailwindcss/tailwind.css';
-import historyLogo from '../../assets/history_logo.svg';
-import timelogo from '../../assets/time.svg';
-import binlogo from '../../assets/bin.svg';
-import deletelogo from '../../assets/delete.svg';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import "tailwindcss/tailwind.css";
+import historyLogo from "../../assets/history_logo.svg";
+import timelogo from "../../assets/time.svg";
+import binlogo from "../../assets/bin.svg";
+import deletelogo from "../../assets/delete.svg";
+import axios from "axios";
 const History = () => {
-
-  const [showClearDataConfirmation, setShowClearDataConfirmation] = useState(false);
-
+  const [showClearDataConfirmation, setShowClearDataConfirmation] =
+    useState(false);
 
   // Get And Delete
 
-  const [history , SetHistory] = useState ([])
-  
-    useEffect (() =>{
-        axios.get('http://localhost:5050/history/getHistory')
-        .then(result => SetHistory(result.data))
-        .catch(err => console.log(err)) 
-    },[])
+  const [history, SetHistory] = useState([]);
 
-    const handleDelete = (id) => {
-      axios
-        .delete('http://localhost:5050/history/deleteHistory/' + id)
-        .then(res => {
-          console.log(res);
-          // Remove the deleted item from the local state
-          SetHistory(prevHistory => prevHistory.filter(item => item._id !== id));
-        })
-        .catch(err => console.log(err));
-    };
-    
+  useEffect(() => {
+    axios
+      .get("http://localhost:5050/history/getHistory")
+      .then((result) => SetHistory(result.data))
+      .catch((err) => console.log(err));
+  }, []);
 
-    // handleClick
+  const handleDelete = (id) => {
+    axios
+      .delete("http://localhost:5050/history/deleteHistory/" + id)
+      .then((res) => {
+        console.log(res);
+        // Remove the deleted item from the local state
+        SetHistory((prevHistory) =>
+          prevHistory.filter((item) => item._id !== id)
+        );
+      })
+      .catch((err) => console.log(err));
+  };
+
+  // handleClick
   const [activeIndex, setActiveIndex] = useState(0);
 
   const handleDivClick = (index) => {
@@ -40,9 +41,8 @@ const History = () => {
   };
 
   const divs = [
-    { text: 'Translator History', imgSrc: timelogo },
-    { text: 'Clear Data', imgSrc: binlogo },
- 
+    { text: "Translator History", imgSrc: timelogo },
+    { text: "Clear Data", imgSrc: binlogo },
   ];
 
   const openClearDataConfirmation = () => {
@@ -53,69 +53,85 @@ const History = () => {
     setShowClearDataConfirmation(false);
   };
   return (
-    <div className='flex'>
-    <div className=''>
-    <div className='flex items-center '>
-    <img src={historyLogo} alt='logo' className='w-10 m-4 ' />
-        <h1 className="text-3xl font-bold text-blue-700"> History</h1>
-    </div>
-    {divs.map((div, index) => (
-        <div
-          key={index}
-          className={`flex items-center w-80 rounded-tr-xl rounded-br-xl ${
-            index === activeIndex ? 'bg-blue-200 text-blue-500' : ''
-          }`}
-          onClick={() => {
-            if (index === 1) {
-              openClearDataConfirmation();
-            } else {
-              handleDivClick(index);
-            }
-          }}
-        >
-          <img src={div.imgSrc} alt='logo' className={`w-6 m-4 ml-7 saturate-0 ${
-              index === activeIndex ? 'text-blue-500 saturate-100' : 'text-red-500'
-            }`}/>
-          <h1 className='text-xl font-bold'>{div.text}</h1>
+    <div className="flex">
+      <div className="">
+        <div className="flex items-center ">
+          <img src={historyLogo} alt="logo" className="w-10 m-4 " />
+          <h1 className="text-3xl font-bold text-blue-700"> History</h1>
         </div>
-      ))}
-    </div>
-    <div>
-<div className='p-4 ml-30 mt-5 ' style={{ width: '800px' }}>
-  <div className=' mx-auto ' style={{ width: '600px' }}>
-    <input
-      type='text'
-      placeholder='Search'
-      className='w-full h-10 p-2 rounded-xl border-2 border-blue-200 focus:outline-none focus:border-blue-500'
-    />
-  </div>
-  <div className='flex items-center justify-between w-80 mx-auto mt-4' style={{ width: '600px' }}>
-    <div style={{ height: '600px', overflowY: 'auto' }}>
-    <table className='w-full text-left table-collapse'>
-    <tbody>
-        {history.map((historyItem, index) => (
-          <tr key={index}>
-            <td className='h-10'>{new Date(historyItem.createdAt).toLocaleString()}</td>
-            <td className='h-10'>{historyItem.textToTranslate}</td>
-            <td className='h-10 ' style={{ color: 'grey' }}>{historyItem.translatedText}</td>
-            <td className='h-10'>{historyItem.inputLanguage} <span>&rarr;</span> {historyItem.outputLanguage}</td>
-            <td className='h-10 w-5'>
+        {divs.map((div, index) => (
+          <div
+            key={index}
+            className={`flex items-center w-80 rounded-tr-xl rounded-br-xl ${
+              index === activeIndex ? "bg-blue-200 text-blue-500" : ""
+            }`}
+            onClick={() => {
+              if (index === 1) {
+                openClearDataConfirmation();
+              } else {
+                handleDivClick(index);
+              }
+            }}
+          >
             <img
-              src={deletelogo}
-              alt='Delete'
-              onClick={(e) => handleDelete(historyItem._id)}
-              style={{ cursor: 'pointer' }}
+              src={div.imgSrc}
+              alt="logo"
+              className={`w-6 m-4 ml-7 saturate-0 ${
+                index === activeIndex
+                  ? "text-blue-500 saturate-100"
+                  : "text-red-500"
+              }`}
             />
-            </td>
-          </tr>
+            <h1 className="text-xl font-bold">{div.text}</h1>
+          </div>
         ))}
-      </tbody>
-        </table>
-    </div>
-  </div>
-</div>
-    </div>
-    {showClearDataConfirmation && (
+      </div>
+      <div>
+        <div className="p-4 ml-30 mt-5 " style={{ width: "800px" }}>
+          <div className=" mx-auto " style={{ width: "600px" }}>
+            <input
+              type="text"
+              placeholder="Search"
+              className="w-full h-10 p-2 rounded-xl border-2 border-blue-200 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div
+            className="flex items-center justify-between w-80 mx-auto mt-4"
+            style={{ width: "600px" }}
+          >
+            <div style={{ height: "600px", overflowY: "auto" }}>
+              <table className="w-full text-left table-collapse">
+                <tbody>
+                  {history.map((historyItem, index) => (
+                    <tr key={index}>
+                      <td className="h-10">
+                        {new Date(historyItem.createdAt).toLocaleString()}
+                      </td>
+                      <td className="h-10">{historyItem.textToTranslate}</td>
+                      <td className="h-10 " style={{ color: "grey" }}>
+                        {historyItem.translatedText}
+                      </td>
+                      <td className="h-10">
+                        {historyItem.inputLanguage} <span>&rarr;</span>{" "}
+                        {historyItem.outputLanguage}
+                      </td>
+                      <td className="h-10 w-5">
+                        <img
+                          src={deletelogo}
+                          alt="Delete"
+                          onClick={(e) => handleDelete(historyItem._id)}
+                          style={{ cursor: "pointer" }}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      {showClearDataConfirmation && (
         <ClearDataConfirmation
           onCancel={() => closeClearDataConfirmation()}
           onConfirm={() => {
@@ -126,24 +142,22 @@ const History = () => {
         />
       )}
     </div>
-  )
-}
+  );
+};
 
 export default History;
 
-
 const ClearDataConfirmation = ({ onCancel, onConfirm }) => {
   const handleClearData = () => {
-    
     axios
-      .delete('http://localhost:5050/history/clearAllData')
-      .then(res => {
+      .delete("http://localhost:5050/history/clearAllData")
+      .then((res) => {
         console.log(res);
-        onConfirm(); 
+        onConfirm();
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
-        onCancel(); 
+        onCancel();
       });
   };
 

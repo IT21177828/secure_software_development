@@ -45,7 +45,7 @@ export default function Translate() {
   const getLanguages = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5050/translate/languages"
+        "http://localhost:5000/translate/languages"
       );
       setLanguages(response.data);
     } catch (error) {
@@ -55,7 +55,7 @@ export default function Translate() {
 
   const refreashToken = async () => {
     try {
-      const response = await axios.post("http://localhost:5050/user/refresh", {
+      const response = await axios.post("http://localhost:5000/user/refresh", {
         token: user.refreashToken,
       });
 
@@ -96,7 +96,7 @@ export default function Translate() {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios
-        .post("http://localhost:5050/user/details", null, {
+        .post("http://localhost:5000/user/details", null, {
           headers: {
             authorization: `Bearer ${token}`,
           },
@@ -122,7 +122,7 @@ export default function Translate() {
     try {
       console.log(email);
       await axios
-        .post("http://localhost:5050/membership/getMembershipDetails", {
+        .post("http://localhost:5000/membership/getMembershipDetails", {
           email: email,
         })
         .then((res) => {
@@ -158,7 +158,7 @@ export default function Translate() {
     };
     try {
       const response = await axios.get(
-        "http://localhost:5050/translate/translation",
+        "http://localhost:5000/translate/translation",
         {
           params: data,
         }
@@ -169,7 +169,7 @@ export default function Translate() {
       console.log(user._id);
 
       const content = { name, textToTranslate };
-      await axios.post("http://localhost:5050/bad/word", {
+      await axios.post("http://localhost:5000/bad/word", {
         params: content,
       });
 
@@ -192,7 +192,7 @@ export default function Translate() {
       console.log(resp);
       console.log("Translation data:", resp);
 
-      await axios.post("http://localhost:5050/history/save", resp);
+      await axios.post("http://localhost:5000/history/save", resp);
       console.log("Translation data stored successfully");
     } catch (error) {
       console.error("Error storing translation data:", error);
@@ -251,7 +251,7 @@ export default function Translate() {
       console.log(user._id);
       const token = localStorage.getItem("accessToken");
       const response = await axios.post(
-        "http://localhost:5050/feedback/translation",
+        "http://localhost:5000/feedback/translation",
         feedbackData,
         {
           headers: {

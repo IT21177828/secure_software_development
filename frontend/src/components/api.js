@@ -4,7 +4,7 @@ import axios from "axios";
 export const checkWordExistence = async (textToTranslate) => {
   try {
     const response = await axios.get(
-      `http://localhost:5050/savedWord/existSavedWord?textToTranslate=${textToTranslate}`
+      `http://localhost:5000/savedWord/existSavedWord?textToTranslate=${textToTranslate}`
     );
     return response.data.exists;
   } catch (error) {

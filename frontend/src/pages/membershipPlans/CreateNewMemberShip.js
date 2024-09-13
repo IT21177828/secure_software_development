@@ -21,7 +21,6 @@ export default function CreateNewMemberShip() {
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
-    
     e.preventDefault();
 
     // Send a POST request to your API to add the new membership plan
@@ -37,25 +36,25 @@ export default function CreateNewMemberShip() {
           description: "",
         });
 
-        navigate('/adminController');
+        navigate("/adminController");
       })
       .catch((err) => console.log(err));
-
-
-
   };
 
   return (
-    <div style={{width:"30%",margin:"auto auto",textAlign:"center"}}>
-         <div class="mt-10 text-center">
-                        <h1 class="text-4xl font-bold text-white">Create New Pricing plans</h1>
-                        {/* <p class="text-lg mt-3 font-semibold">Every plan includes 30 day free trial</p> */}
-                    </div>
+    <div style={{ width: "30%", margin: "auto auto", textAlign: "center" }}>
+      <div class="mt-10 text-center">
+        <h1 class="text-4xl font-bold text-white">Create New Pricing plans</h1>
+        {/* <p class="text-lg mt-3 font-semibold">Every plan includes 30 day free trial</p> */}
+      </div>
 
-                    <br></br>
+      <br></br>
       <form onSubmit={handleSubmit}>
         <div className="mb-6">
-          <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+          <label
+            htmlFor="name"
+            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >
             Membership Name
           </label>
           <input
@@ -70,7 +69,10 @@ export default function CreateNewMemberShip() {
           />
         </div>
         <div className="mb-6">
-          <label htmlFor="price" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+          <label
+            htmlFor="price"
+            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >
             Price
           </label>
           <input
@@ -85,7 +87,10 @@ export default function CreateNewMemberShip() {
           />
         </div>
         <div className="mb-6">
-          <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+          <label
+            htmlFor="description"
+            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >
             Description
           </label>
           <input
@@ -109,7 +114,10 @@ export default function CreateNewMemberShip() {
               required
             />
           </div>
-          <label htmlFor="remember" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+          <label
+            htmlFor="remember"
+            className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+          >
             Remember me
           </label>
         </div>

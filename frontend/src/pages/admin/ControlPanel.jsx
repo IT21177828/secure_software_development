@@ -31,7 +31,7 @@ export default function ControlPanel() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5050/membershipType/view")
+      .get("http://localhost:5000/membershipType/view")
       .then((result) => SetMembership(result.data))
       .catch((err) => console.log(err));
   }, []);
@@ -55,7 +55,7 @@ export default function ControlPanel() {
   //   const fetchData = async () => {
   //     try {
   //       const response = await axios.get(
-  //         `http://localhost:5050/membershipType/view/${id}`
+  //         `http://localhost:5000/membershipType/view/${id}`
   //       );
   //       setFormData(response.data);
   //     } catch (error) {
@@ -68,7 +68,7 @@ export default function ControlPanel() {
 
   //   // Send a POST request to your API to add the new membership plan
   //   axios
-  //     .post("http://localhost:5050/membershipType/", formData)
+  //     .post("http://localhost:5000/membershipType/", formData)
   //     .then((result) => {
   //       // Update the state or perform any other necessary actions
   //       setMemberships([...memberships, result.data]);
@@ -107,7 +107,7 @@ export default function ControlPanel() {
 
     axios
       .put(
-        `http://localhost:5050/membershipType/update/${selectedMembership._id}`,
+        `http://localhost:5000/membershipType/update/${selectedMembership._id}`,
         {
           name: updatedMembershipsName,
           price: updatedMembershipsPrice,
@@ -141,7 +141,7 @@ export default function ControlPanel() {
     console.log(selectedMembership);
     axios
       .delete(
-        `http://localhost:5050/membershipType/delete/${selectedMembership}`,
+        `http://localhost:5000/membershipType/delete/${selectedMembership}`,
         {}
       )
       .then(() => {
@@ -199,10 +199,9 @@ export default function ControlPanel() {
           </svg>
 
           <div className="hidden lg:block">
-          <div className="my-2 mb-6">
-  <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-</div>
-
+            <div className="my-2 mb-6">
+              <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
+            </div>
 
             <ul>
               <li className="mb-6">

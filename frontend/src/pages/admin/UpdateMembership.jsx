@@ -20,29 +20,26 @@ export default function UpdateMemberShip() {
   };
   const { id } = useParams();
 
-  console.log(id)
-
+  console.log(id);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:5050/membershipType/view/${id}`);
+        const response = await axios.get(
+          `http://localhost:5000/membershipType/view/${id}`
+        );
         setFormData(response.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-  
+
     fetchData(); // Call the fetchData function to trigger the data fetching.
-  
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
-  
 
   console.log(formData);
-
-
-
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -64,16 +61,19 @@ export default function UpdateMemberShip() {
   };
 
   return (
-    <div style={{width:"30%",margin:"auto auto",textAlign:"center"}}>
-         <div class="mt-10 text-center">
-                        <h1 class="text-4xl font-bold text-white">Pricing plans</h1>
-                        {/* <p class="text-lg mt-3 font-semibold">Every plan includes 30 day free trial</p> */}
-                    </div>
+    <div style={{ width: "30%", margin: "auto auto", textAlign: "center" }}>
+      <div class="mt-10 text-center">
+        <h1 class="text-4xl font-bold text-white">Pricing plans</h1>
+        {/* <p class="text-lg mt-3 font-semibold">Every plan includes 30 day free trial</p> */}
+      </div>
 
-                    <br></br>
+      <br></br>
       <form onSubmit={handleSubmit}>
         <div className="mb-6">
-          <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+          <label
+            htmlFor="name"
+            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >
             Membership Name
           </label>
           <input
@@ -88,7 +88,10 @@ export default function UpdateMemberShip() {
           />
         </div>
         <div className="mb-6">
-          <label htmlFor="price" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+          <label
+            htmlFor="price"
+            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >
             Price
           </label>
           <input
@@ -103,7 +106,10 @@ export default function UpdateMemberShip() {
           />
         </div>
         <div className="mb-6">
-          <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+          <label
+            htmlFor="description"
+            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >
             Description
           </label>
           <input
@@ -127,7 +133,10 @@ export default function UpdateMemberShip() {
               required
             />
           </div>
-          <label htmlFor="remember" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+          <label
+            htmlFor="remember"
+            className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+          >
             Confirm the details
           </label>
         </div>

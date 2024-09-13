@@ -1,17 +1,16 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 
-export default function BadWordHistory({userId}) {
+export default function BadWordHistory({ userId }) {
   const [postDetails, setPostDetails] = useState([]);
 
   const user = "64fcb2b404a23c6f45980822";
-  console.log(user)
+  console.log(user);
 
   async function getDetails() {
-    
     const id = { user };
 
-    const posts = await axios.get("http://localhost:5050/bad/badpost", {
+    const posts = await axios.get("http://localhost:5000/bad/badpost", {
       params: id,
     });
     console.log(posts.data.response);
@@ -26,7 +25,7 @@ export default function BadWordHistory({userId}) {
     const dateTime = new Date(date);
 
     const year = dateTime.getFullYear();
-    const month = dateTime.getMonth() + 1; 
+    const month = dateTime.getMonth() + 1;
     const day = dateTime.getDate();
     const hour = dateTime.getUTCHours();
     const minute = dateTime.getUTCMinutes();

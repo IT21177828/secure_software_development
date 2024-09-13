@@ -28,7 +28,7 @@ export default function Login() {
 
   const refreashToken = async () => {
     try {
-      const response = await axios.post("http://localhost:5050/user/refresh", {
+      const response = await axios.post("http://localhost:5000/user/refresh", {
         token: user.refreashToken,
       });
 
@@ -68,7 +68,7 @@ export default function Login() {
     console.log("submit");
     try {
       const response = await axios
-        .post("http://localhost:5050/user/login", {
+        .post("http://localhost:5000/user/login", {
           email,
           passwordHash,
         })

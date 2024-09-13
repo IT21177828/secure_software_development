@@ -3,11 +3,12 @@ import { Strategy as GithubStrategy } from "passport-github2";
 import { Strategy as FacebookStrategy } from "passport-facebook";
 import passport from "passport";
 
-const GOOGLE_CLIENT_ID = "your id";
-const GOOGLE_CLIENT_SECRET = "your id";
+const GOOGLE_CLIENT_ID =
+  "431578363920-gdj5186t5h4p5h3gqhhvnmqaaq06n7mt.apps.googleusercontent.com";
+const GOOGLE_CLIENT_SECRET = "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";
 
-const GITHUB_CLIENT_ID = "your id";
-const GITHUB_CLIENT_SECRET = "your id";
+const GITHUB_CLIENT_ID = "Ov23likF70Z8gLuU2CgP";
+const GITHUB_CLIENT_SECRET = "f61f732ea8b42858d06cd6b4a96597890bc53a3d";
 
 const FACEBOOK_APP_ID = "your id";
 const FACEBOOK_APP_SECRET = "your id";

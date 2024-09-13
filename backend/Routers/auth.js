@@ -3,7 +3,7 @@ import passport from "passport";
 
 const router = Router();
 
-const CLIENT_URL = "http://localhost:3000/";
+const CLIENT_URL = "http://localhost:3000/membership";
 
 router.get("/login/success", (req, res) => {
   if (req.user) {

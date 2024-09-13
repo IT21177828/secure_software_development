@@ -1,59 +1,64 @@
-import express, { json } from "express";
+import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import userRouter from "./Routers/userRouter.js";
-import passport from "./passport.js";
-import cookieSession from "cookie-session";
+import session from "express-session"; // Switch to express-session
+import passport from "passport";
+import Stripe from "stripe";
 
+import userRouter from "./Routers/userRouter.js";
 import membershipRouter from "./Routers/memberShipRouter.js";
 import membershipTypeRouter from "./Routers/membershipTypeRouter.js";
 import badWordRouter from "./Routers/badWordRouter.js";
 import translateRouter from "./Routers/translateRouter.js";
 import feedbackRouter from "./Routers/FeedbackRouter.js";
 import paymentRouter from "./Routers/paymentRouter.js";
-import Stripe from "stripe";
 import historyRouter from "./Routers/historyRouter.js";
 import savedwordRouter from "./Routers/SavedWordRouter.js";
 import authRoute from "./Routers/auth.js";
-
 import checkoutRouter from "./Routers/checkoutRouter.js";
+import "./passport.js";
 
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 const app = express();
-// const stripe = require('stripe')('YOUR_STRIPE_SECRET_KEY');
 
-const stripeSecretKey =
-  "sk_test_51NoUoGABnypc8eR2cOxobGpjmZUSETzx8mdX3mJFm8YU8d4QEWErQNsP5rkjTl6Rw4qGHWa86kxMU4QsARtYjMJm00jfSQ6kN1";
-const stripeInstance = new Stripe(stripeSecretKey);
+// Initialize Stripe with secret key from environment variables
+const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// const stripe = new Stripe(process.env.STRIPE_PRIVATE_KEY);
-
-// const storeItem = new Map([
-//   [1, { priceInCents: 1000, name: "Learn React" }],
-//   [2, { priceInCents: 2000, name: "wcwecwc" }],
-// ]);
-
+// Replace cookie-session with express-session
 app.use(
-  cookieSession({ name: "session", keys: ["lama"], maxAge: 24 * 60 * 60 * 100 })
-);
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    methods: "GET,POST,PUT,DELETE",
-    credentials: true,
+  session({
+    secret: process.env.SESSION_KEY || "your_secret_key_here", // Use a strong secret key
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      maxAge: 24 * 60 * 60 * 1000, // 1 day expiration
+    },
   })
 );
 
+// Initialize Passport middleware
+app.use(passport.initialize());
+app.use(passport.session()); // Persistent login sessions
+
+// Enable CORS to allow frontend (React) requests
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Your frontend URL
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true, // Allow cookies and authorization headers
+  })
+);
+
+// Body parser for JSON data
 app.use(express.json());
+
+// Serve static files (if needed)
 app.use(express.static("public"));
 
-// Routes
+// API Routes
 app.use("/auth", authRoute);
 app.use("/membership", membershipRouter);
 app.use("/membershipType", membershipTypeRouter);
@@ -65,6 +70,14 @@ app.use("/payment", paymentRouter);
 app.use("/history", historyRouter);
 app.use("/savedWord", savedwordRouter);
 app.use("/checkout", checkoutRouter);
+
+// Error handling middleware (optional)
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something went wrong!");
+});
+
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`);
 });

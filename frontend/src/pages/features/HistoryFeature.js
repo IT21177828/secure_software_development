@@ -13,7 +13,7 @@ const HistoryFeature = (userId) => {
 
     try {
       const posts = await axios
-        .get("http://localhost:5050/history/getHistory", {
+        .get("http://localhost:5000/history/getHistory", {
           params: id,
         })
         .then((response) => {
@@ -54,7 +54,7 @@ const HistoryFeature = (userId) => {
     if (confirmation) {
       // User clicked "OK," proceed with the deletion
       axios
-        .delete("http://localhost:5050/history/deleteHistory/" + id)
+        .delete("http://localhost:5000/history/deleteHistory/" + id)
         .then((res) => {
           // Remove the deleted item from the local state
           setHistory((prevHistory) =>
@@ -77,7 +77,7 @@ const HistoryFeature = (userId) => {
     if (confirmation) {
       // User clicked "OK," proceed with the deletion
       axios
-        .delete("http://localhost:5050/history/clearAllData")
+        .delete("http://localhost:5000/history/clearAllData")
         .then((res) => {
           // Remove all items from the local state
           setHistory([]);

@@ -11,7 +11,7 @@ export default function BadwordFeature(userId) {
 
     try {
       const posts = await axios
-        .get("http://localhost:5050/bad/badpost", {
+        .get("http://localhost:5000/bad/badpost", {
           params: id,
         })
         .then((response) => {

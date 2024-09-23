@@ -37,7 +37,7 @@ export default function Registration() {
     }
     try {
       console.log("heeee" + gender);
-      const response = await axios.post("http://localhost:5050/user", {
+      const response = await axios.post("http://localhost:5000/user", {
         firstName,
         lastName,
         email,

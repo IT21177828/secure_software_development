@@ -6,7 +6,7 @@ export default function MemberShipPlan() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5050/membershipType/view")
+      .get("http://localhost:5000/membershipType/view")
       .then((result) => SetMembership(result.data))
       .catch((err) => console.log(err));
   }, []);

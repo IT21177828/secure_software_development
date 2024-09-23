@@ -34,7 +34,7 @@ export default function Checkout() {
     async function fetchData() {
       const id = params.id.toString();
       const response = await fetch(
-        `http://localhost:5050/membershipType/view/${params.id.toString()}`
+        `http://localhost:5000/membershipType/view/${params.id.toString()}`
       );
       if (!response.ok) {
         const message = `An error has occurred: ${response.statusText}`;
@@ -70,7 +70,7 @@ export default function Checkout() {
   const fetchMembershipData = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5050/membership/getMembershipDetails",
+        "http://localhost:5000/membership/getMembershipDetails",
         {
           email: user.email,
         }
@@ -87,7 +87,7 @@ export default function Checkout() {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios
-        .post("http://localhost:5050/user/details", null, {
+        .post("http://localhost:5000/user/details", null, {
           headers: {
             authorization: `Bearer ${token}`,
           },
@@ -126,8 +126,8 @@ export default function Checkout() {
       // let email = user.email;
       // console.log(email);  //console print email correctly
       const response = await axios
-        .post("http://localhost:5050/membership/getMembershipDetails", {
-          //xhr.js:251     POST http://localhost:5050/membership/getMembershipDetails 400 (Bad Request)
+        .post("http://localhost:5000/membership/getMembershipDetails", {
+          //xhr.js:251     POST http://localhost:5000/membership/getMembershipDetails 400 (Bad Request)
           email: data,
         })
         .then((res) => {
@@ -174,7 +174,7 @@ export default function Checkout() {
       } else {
         try {
           const response = await axios.post(
-            "http://localhost:5050/membership/",
+            "http://localhost:5000/membership/",
             {
               email: user.email,
               name: form.name,

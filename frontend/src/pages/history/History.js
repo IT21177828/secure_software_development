@@ -15,14 +15,14 @@ const History = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5050/history/getHistory")
+      .get("http://localhost:5000/history/getHistory")
       .then((result) => SetHistory(result.data))
       .catch((err) => console.log(err));
   }, []);
 
   const handleDelete = (id) => {
     axios
-      .delete("http://localhost:5050/history/deleteHistory/" + id)
+      .delete("http://localhost:5000/history/deleteHistory/" + id)
       .then((res) => {
         console.log(res);
         // Remove the deleted item from the local state
@@ -150,7 +150,7 @@ export default History;
 const ClearDataConfirmation = ({ onCancel, onConfirm }) => {
   const handleClearData = () => {
     axios
-      .delete("http://localhost:5050/history/clearAllData")
+      .delete("http://localhost:5000/history/clearAllData")
       .then((res) => {
         console.log(res);
         onConfirm();

@@ -8,14 +8,14 @@ export default function MembershipControlPanel() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5050/membershipType/view")
+      .get("http://localhost:5000/membershipType/view")
       .then((result) => setMembership(result.data))
       .catch((err) => console.log(err));
   }, []);
 
   const handleDelete = (id) => {
     axios
-      .delete("http://localhost:5050/membershipType/delete/" + id)
+      .delete("http://localhost:5000/membershipType/delete/" + id)
       .then((res) => {
         console.log(res);
         // Remove the deleted item from the local state

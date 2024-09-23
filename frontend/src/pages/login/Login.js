@@ -4,6 +4,7 @@ import Jwt_decode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { FaGoogle, FaGithub, FaFacebook } from "react-icons/fa"; // Import icons
 
+//OAuth
 export default function Login() {
   const google = () => {
     window.open("http://localhost:5000/auth/google", "_self");

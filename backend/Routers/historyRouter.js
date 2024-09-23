@@ -4,6 +4,7 @@ import userController from "../controllers/userController.js";
 
 const historyRouter = express.Router();
 
+//Broken Authentication vulnerability is fixed by adding userController.verify middleware
 historyRouter.post(
   "/save",
   userController.verify,

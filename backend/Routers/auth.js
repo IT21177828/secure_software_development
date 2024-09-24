@@ -2,8 +2,72 @@ import { Router } from "express";
 import passport from "passport";
 
 const router = Router();
-
 const CLIENT_URL = "http://localhost:3000";
+
+// Google login
+router.get(
+  "/google",
+  passport.authenticate("google", { scope: ["email", "profile"] })
+);
+
+// Google authentication callback
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/login/failed",
+  }),
+  (req, res) => {
+    const userId = req.user._id;
+    res.redirect(`http://localhost:3000/dashboard/${userId}`);
+  }
+);
+
+// Facebook login
+router.get(
+  "/facebook",
+  passport.authenticate("facebook", { scope: ["email", "profile"] })
+);
+// Facebook authentication callback
+router.get(
+  "/facebook/callback",
+  passport.authenticate("facebook", {
+    failureRedirect: "/login/failed",
+  }),
+  (req, res) => {
+    const userId = req.user._id;
+    res.redirect(`http://localhost:3000/dashboard/${userId}`);
+  }
+);
+
+// GitHub login
+router.get(
+  "/github",
+  passport.authenticate("github", { scope: ["email", "profile"] })
+);
+
+// GitHub authentication callback
+router.get(
+  "/github/callback",
+  passport.authenticate("github", {
+    failureRedirect: "/login/failed",
+  }),
+  (req, res) => {
+    const userId = req.user._id;
+    res.redirect(`http://localhost:3000/dashboard/${userId}`);
+  }
+);
+
+// Local login callback
+router.post(
+  "/local/callback",
+  passport.authenticate("local", {
+    failureRedirect: "/login/failed",
+  }),
+  (req, res) => {
+    const userId = req.user._id;
+    res.send(req.user);
+  }
+);
 
 router.get("/login/success", (req, res) => {
   if (req.user) {
@@ -23,42 +87,17 @@ router.get("/login/failed", (req, res) => {
   });
 });
 
+// Logout Route
 router.get("/logout", (req, res) => {
-  req.logout();
-  res.redirect(CLIENT_URL);
+  req.logout((err) => {
+    if (err) {
+      return res
+        .status(500)
+        .json({ success: false, message: "Logout failed." });
+    }
+    res.clearCookie("connect.sid"); // Clear session cookie
+    res.redirect(CLIENT_URL);
+  });
 });
-
-router.get("/google", passport.authenticate("google", { scope: ["profile"] }));
-
-router.get(
-  "/google/callback",
-  passport.authenticate("google", {
-    successRedirect: CLIENT_URL,
-    failureRedirect: "/login/failed",
-  })
-);
-
-router.get("/github", passport.authenticate("github", { scope: ["profile"] }));
-
-router.get(
-  "/github/callback",
-  passport.authenticate("github", {
-    successRedirect: CLIENT_URL,
-    failureRedirect: "/login/failed",
-  })
-);
-
-router.get(
-  "/facebook",
-  passport.authenticate("facebook", { scope: ["profile"] })
-);
-
-router.get(
-  "/facebook/callback",
-  passport.authenticate("facebook", {
-    successRedirect: CLIENT_URL,
-    failureRedirect: "/login/failed",
-  })
-);
 
 export default router;

@@ -46,7 +46,7 @@ export default function UpdateMemberShip() {
 
     // Send a POST request to your API to add the new membership plan
     axios
-      .post("http://localhost:5050/membershipType/", formData)
+      .post("http://localhost:5000/membershipType/", formData)
       .then((result) => {
         // Update the state or perform any other necessary actions
         setMembership([...membership, result.data]);

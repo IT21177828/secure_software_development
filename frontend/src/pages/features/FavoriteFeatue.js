@@ -23,7 +23,7 @@ const FavoriteFeatue = (userId) => {
     if (confirmation) {
       setIsEditing(false);
       axios
-        .put("http://localhost:5050/savedWord/updateMessage/${editingItemId}", {
+        .put("http://localhost:5000/savedWord/updateMessage/${editingItemId}", {
           message,
         })
         .then((result) => {
@@ -48,7 +48,7 @@ const FavoriteFeatue = (userId) => {
     try {
       console.log(id);
       const posts = await axios
-        .get("http://localhost:5050/savedWord/getSavedWord", {
+        .get("http://localhost:5000/savedWord/getSavedWord", {
           params: id,
         })
 
@@ -92,7 +92,7 @@ const FavoriteFeatue = (userId) => {
       // User clicked "OK," proceed with the deletion
       axios
         .delete(
-          `http://localhost:5050/savedWord/delete?textToTranslate=${textToTranslate}`
+          `http://localhost:5000/savedWord/delete?textToTranslate=${textToTranslate}`
         )
         .then((res) => {
           console.log(res);

@@ -25,7 +25,7 @@ const FeedbackTable = () => {
   const fetchUserData = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const res = await axios.post("http://localhost:5050/user/details", null, {
+      const res = await axios.post("http://localhost:5000/user/details", null, {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -44,7 +44,7 @@ const FeedbackTable = () => {
   const getData = async () => {
     const token = localStorage.getItem("accessToken");
     const userId = user._id;
-    const url = `http://localhost:5050/feedback/user?userId=${userId}`;
+    const url = `http://localhost:5000/feedback/user?userId=${userId}`;
     axios
       .get(url, {
         headers: {
@@ -65,7 +65,7 @@ const FeedbackTable = () => {
   const confirmDelete = () => {
     const token = localStorage.getItem("accessToken");
     axios
-      .delete(`http://localhost:5050/feedback/delete/${selectedFeedback}`, {
+      .delete(`http://localhost:5000/feedback/delete/${selectedFeedback}`, {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -97,7 +97,7 @@ const FeedbackTable = () => {
     const token = localStorage.getItem("accessToken");
     axios
       .put(
-        `http://localhost:5050/feedback/update/${selectedFeedback._id}`,
+        `http://localhost:5000/feedback/update/${selectedFeedback._id}`,
         {
           feedbackText: updatedFeedback,
         },

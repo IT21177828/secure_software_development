@@ -69,12 +69,12 @@ export default function Login() {
     console.log("submit");
     try {
       const response = await axios
-        .post("http://localhost:5000/user/login", {
+        .post("http://localhost:5000/auth/local/callback", {
           email,
-          passwordHash,
+          password:passwordHash,
         })
         .then((res) => {
-          console.log(res.data.user.firstName);
+          console.log(res.data.user);
           const newUser = { user: res.data.user };
           console.log(newUser);
           setUser(newUser);
@@ -97,7 +97,7 @@ export default function Login() {
             navigate("/adminController");
           } else {
             console.log("i am user");
-            navigate("/");
+            navigate("/dashboard/" + newUser.user._id);
           }
         });
     } catch (error) {

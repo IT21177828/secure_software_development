@@ -6,7 +6,7 @@ const SavedWords = () => {
 
   const fetchData = () => {
     axios
-      .get("http://localhost:5050/savedWord/getSavedWord")
+      .get("http://localhost:5000/savedWord/getSavedWord")
       .then((response) => {
         setSavedWords(response.data);
       })
@@ -28,7 +28,7 @@ const SavedWords = () => {
 
   const handleDelete = (id) => {
     axios
-      .delete("http://localhost:5050/savedWord/deleteSavedWord/" + id)
+      .delete("http://localhost:5000/savedWord/deleteSavedWord/" + id)
       .then((res) => {
         console.log(res);
 

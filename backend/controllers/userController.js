@@ -2,15 +2,9 @@ import mongoose from "../db/conn.js";
 import userSchema from "../models/usermodel.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
-
-const transporter = nodemailer.createTransport({
-  service: "Gmail", // Use the appropriate email service
-  auth: {
-    user: "bpathum@gmail.com", // Replace with your email address
-    pass: "pgfliawbkmllcenm", // Replace with your email password or an app-specific password
-  },
-});
+import fs from "fs";
+import path from "path";
+let worstPasswords = [];
 
 export const userModel = mongoose.model("user", userSchema);
 
@@ -19,46 +13,47 @@ export function hashPasswordNew(password) {
     .pbkdf2Sync(password, "no_salt", 1000, 64, `sha512`)
     .toString(`hex`);
 }
-//add new user
 
-export function registerUser(req, res) {
+// Add new user with password strength check
+export async function registerUser(req, res) {
+  try {
+    worstPasswords = fs
+      .readFileSync(path.resolve("./worst-passwords.txt"), "utf-8")
+      .split("\n")
+      .map((password) => password.trim());
+    console.log("Worst passwords loaded successfully");
+  } catch (error) {
+    console.error("Error reading worst-passwords.txt:", error);
+    return res.status(500).send("Error loading worst passwords.");
+  }
+
   const { firstName, lastName, email, passwordHash, gender, age, address } =
     req.body;
 
-  let newUser = new userModel();
-  newUser.firstName = firstName;
-  newUser.lastName = lastName;
-  newUser.email = email;
-  newUser.passwordHash = hashPasswordNew(passwordHash);
-  newUser.gender = gender;
-  newUser.age = age;
-  newUser.address = address;
+  if (worstPasswords.includes(passwordHash)) {
+    return res.status(400).send("The password you entered is too weak.");
+  }
 
-  newUser
-    .save()
-    .then((response) => {
-      res.send(response);
-      console.log("User added successfully");
+  let newUser = new userModel({
+    firstName,
+    lastName,
+    email,
+    passwordHash: hashPasswordNew(passwordHash),
+    gender,
+    age,
+    address,
+  });
 
-      const mailOptions = {
-        from: "it21180552@my.sliit.lk", // Replace with your email address
-        to: newUser.email, // Replace with the recipient's email address
-        subject: "Hello from Nodemailer",
-        text: "This is a test email sent from Nodemailer.",
-      };
-
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error("Error sending email:", error);
-        } else {
-          console.log("Email sent:", info.response);
-        }
-      });
-    })
-    .catch((err) => {
-      res.send(err);
-      console.log(err);
-    });
+  try {
+    const response = await newUser.save();
+    res
+      .status(201)
+      .json({ message: "User added successfully", user: response });
+    // Send confirmation email logic here...
+  } catch (err) {
+    res.status(500).send(err);
+    console.log(err);
+  }
 }
 
 // create an admin account
@@ -90,12 +85,12 @@ export function adminAccount(req, res) {
 // login user
 
 const generateAccessToken = (user) => {
-  return jwt.sign({ email: user.email }, "secret_key", {
-    expiresIn: "58m",
+  return jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE,
   });
 };
 const generateRefreshToken = (user) => {
-  return jwt.sign({ email: user.email }, "refresh_secret_key", {
+  return jwt.sign({ email: user.email }, process.env.REFRESH_JWT_SECRET, {
     expiresIn: "58m",
   });
 };
@@ -192,7 +187,7 @@ const verify = (req, res, next) => {
   if (authHeader) {
     const token = authHeader.split(" ")[1];
 
-    jwt.verify(token, "secret_key", (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
       if (err) {
         return res.status(403).json("Token is not valid!");
       }
@@ -215,7 +210,7 @@ const refresh = (req, res) => {
     return res.status(403).json("Refresh Token Invalied!");
   }
 
-  jwt.verify(refreshToken, "refresh_secret_key", (err, user) => {
+  jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET, (err, user) => {
     err && console.log(err);
     refreashTokens = refreashTokens.filter((token) => token !== refreshToken);
 

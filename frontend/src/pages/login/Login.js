@@ -3,19 +3,19 @@ import axios from "axios";
 import Jwt_decode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { FaGoogle, FaGithub, FaFacebook } from "react-icons/fa"; // Import icons
-
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 //OAuth
 export default function Login() {
   const google = () => {
-    window.open("http://localhost:5000/auth/google", "_self");
+    window.open(`${backendUrl}/auth/google`, "_self");
   };
 
   const github = () => {
-    window.open("http://localhost:5000/auth/github", "_self");
+    window.open(`${backendUrl}/auth/github`, "_self");
   };
 
   const facebook = () => {
-    window.open("http://localhost:5000/auth/facebook", "_self");
+    window.open(`${backendUrl}/auth/facebook`, "_self");
   };
 
   const [user, setUser] = useState(null);
@@ -29,7 +29,7 @@ export default function Login() {
 
   const refreashToken = async () => {
     try {
-      const response = await axios.post("http://localhost:5000/user/refresh", {
+      const response = await axios.post(`${backendUrl}/user/refresh`, {
         token: user.refreashToken,
       });
 
@@ -69,7 +69,7 @@ export default function Login() {
     console.log("submit");
     try {
       const response = await axios
-        .post("http://localhost:5000/user/login", {
+        .post(`${backendUrl}/user/login`, {
           email,
           passwordHash,
         })

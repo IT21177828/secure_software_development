@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 export default function CreateNewMemberShip() {
   const [membership, setMembership] = useState([]);
   const [formData, setFormData] = useState({
@@ -25,7 +25,7 @@ export default function CreateNewMemberShip() {
 
     // Send a POST request to your API to add the new membership plan
     axios
-      .post("http://localhost:5000/membershipType/", formData)
+      .post(`${backendUrl}/membershipType/`, formData)
       .then((result) => {
         // Update the state or perform any other necessary actions
         setMembership([...membership, result.data]);

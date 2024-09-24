@@ -5,6 +5,7 @@ import jsPDF from "jspdf";
 import { Link, useParams } from "react-router-dom";
 import "jspdf-autotable";
 
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 export default function ControlPanel() {
   const [membership, SetMembership] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,7 +32,7 @@ export default function ControlPanel() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/membershipType/view")
+      .get(`${backendUrl}/membershipType/view`)
       .then((result) => SetMembership(result.data))
       .catch((err) => console.log(err));
   }, []);
@@ -106,14 +107,11 @@ export default function ControlPanel() {
     setIsProcessingUpdate(true);
 
     axios
-      .put(
-        `http://localhost:5000/membershipType/update/${selectedMembership._id}`,
-        {
-          name: updatedMembershipsName,
-          price: updatedMembershipsPrice,
-          description: updatedMembershipsDescription,
-        }
-      )
+      .put(`${backendUrl}/membershipType/update/${selectedMembership._id}`, {
+        name: updatedMembershipsName,
+        price: updatedMembershipsPrice,
+        description: updatedMembershipsDescription,
+      })
       .then(() => {
         setMemberShipData((prevData) =>
           prevData.map((plan) =>
@@ -140,10 +138,7 @@ export default function ControlPanel() {
   const confirmDelete = () => {
     console.log(selectedMembership);
     axios
-      .delete(
-        `http://localhost:5000/membershipType/delete/${selectedMembership}`,
-        {}
-      )
+      .delete(`${backendUrl}/membershipType/delete/${selectedMembership}`, {})
       .then(() => {
         // Handle the successful delete here
         setIsDeleteModalOpen(false);

@@ -1,10 +1,12 @@
 // api.js
 import axios from "axios";
 
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
+
 export const checkWordExistence = async (textToTranslate) => {
   try {
     const response = await axios.get(
-      `http://localhost:5000/savedWord/existSavedWord?textToTranslate=${textToTranslate}`
+      `${backendUrl}/savedWord/existSavedWord?textToTranslate=${textToTranslate}`
     );
     return response.data.exists;
   } catch (error) {

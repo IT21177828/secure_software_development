@@ -16,13 +16,13 @@ import CheckoutPage from "./pages/checkout/Checkout";
 import ControlPanel from "./pages/admin/ControlPanel";
 import UpdateMemberShip from "./pages/admin/UpdateMembership";
 import { useEffect, useState } from "react";
-
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 const App = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     const getUser = () => {
-      fetch("http://localhost:5000/auth/login/success", {
+      fetch(`${backendUrl}/auth/login/success`, {
         method: "GET",
         credentials: "include",
         headers: {

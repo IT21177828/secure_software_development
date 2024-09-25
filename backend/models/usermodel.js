@@ -18,19 +18,28 @@ const user = new mongoose.Schema({
     },
     passwordHash:{
         type: String,
-        required:true
+        required:false
     },
     gender:{
         type: String,
-        required: true
+        required: false
     },
     age:{
         type: Number,
-        required: true
+        required: false
     },
     address:{
         type: String,
+        required: false
+    },
+    provider:{
+        type: String,
         required: true
+    },
+    providerId:{
+        type: String,
+        required: true,
+        unique: true
     },
 
     

@@ -5,5 +5,3 @@
 Repo URL: https://github.com/IT21177828/SPM_SEES_Translator.git
 
 Last updated on - Oct 17, 2023
-
-thilina

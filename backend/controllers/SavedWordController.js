@@ -1,5 +1,5 @@
 import SavedWordModel from "../models/SavedWordModel.js";
-
+import logger from "../logger/logger.js";
 // const getSavedWord = (req, res) => {
 //   SavedWordModel.find()
 //     .then((word) => res.json(word))
@@ -8,8 +8,8 @@ import SavedWordModel from "../models/SavedWordModel.js";
 
 const deleteSavedWord = (req, res) => {
   SavedWordModel.findByIdAndDelete(req.params.id)
-    .then((word) => res.json(word))
-    .catch((err) => res.json(err));
+    .then((word) => res.json(word), logger.info("Word deleted successfully"))
+    .catch((err) => res.json(err), logger.error("Error in deleting word"));
 };
 
 // const clearAllData = (req, res) => {
@@ -36,8 +36,10 @@ const createSavedWord = async (req, res) => {
 
     const savedTranslation = await translation.save();
     res.json(savedTranslation);
+    logger.info("Translation stored successfully");
   } catch (error) {
     console.error(error);
+    logger.error("Error in createHistory");
     res
       .status(500)
       .json({ error: "An error occurred while storing the translation." });
@@ -56,13 +58,16 @@ const deleteWord = async (req, res) => {
     if (deletedData.deletedCount > 0) {
       console.log("Existing data deleted successfully");
       res.status(200).json({ message: "Data deleted successfully" });
+      logger.info("Existing data deleted successfully");
     } else {
       console.log("Data with textToTranslate not found");
       res.status(404).json({ message: "Data not found" });
+      logger.error("Data with textToTranslate not found");
     }
   } catch (error) {
     console.error("Error deleting data:", error);
     res.status(500).json({ error: "Internal server error" });
+    logger.error("Error in deleting data");
   }
 };
 
@@ -77,13 +82,16 @@ const getSavedWordExist = async (req, res) => {
     if (word) {
       // Word exists in the database
       res.json({ exists: true });
+      logger.info("Word exists in the database");
     } else {
       // Word does not exist in the database
       res.json({ exists: false });
+      logger.info("Word does not exist in the database");
     }
   } catch (err) {
     console.error("Error checking data:", err);
     res.status(500).json({ error: "Internal server error" });
+    logger.error("Error in checking data");
   }
 };
 
@@ -94,6 +102,7 @@ const updateMessage = async (req, res) => {
 
     // Check if an 'id' parameter and 'message' are provided
     if (!message) {
+      logger.error("Missing 'message' parameter");
       return res.status(400).json({ error: "Missing 'message' parameter." });
     }
 
@@ -105,15 +114,18 @@ const updateMessage = async (req, res) => {
     );
 
     if (!updatedTranslation) {
+      logger.error("Translation not found");
       return res.status(404).json({ error: "Translation not found." });
     }
 
     res.json(updatedTranslation);
+    logger.info("Message updated successfully");
   } catch (error) {
     console.error(error);
     res
       .status(500)
       .json({ error: "An error occurred while updating the message." });
+    logger.error("Error in updating message");
   }
 };
 const getSavedWord = async (req, res) => {
@@ -122,6 +134,7 @@ const getSavedWord = async (req, res) => {
     const id = req.query.user;
 
     if (!id) {
+      logger.error("User ID not provided");
       return res.status(400).json({
         message: "User ID not provided.",
       });
@@ -135,11 +148,13 @@ const getSavedWord = async (req, res) => {
     res.json({
       response: savedRecords,
     });
+    logger.info("User's history fetched successfully");
   } catch (error) {
     console.error("Error in getHistory:", error);
     res.status(500).json({
       error: "An error occurred while fetching the user's history.",
     });
+    logger.error("Error in fetching user's history");
   }
 };
 

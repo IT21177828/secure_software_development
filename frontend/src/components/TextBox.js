@@ -3,6 +3,8 @@ import PropTypes from "prop-types"; // Import PropTypes
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { checkWordExistence } from "./api";
+
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 const TextBox = ({
   style,
   setShowModal,
@@ -26,12 +28,12 @@ const TextBox = ({
       if (isWordSaved) {
         // If the word is saved, remove it from the database
         await axios.delete(
-          `http://localhost:5000/savedWord/delete?textToTranslate=${textToTranslate}`
+          `${backendUrl}/savedWord/delete?textToTranslate=${textToTranslate}`
         );
         setIsWordSaved(false); // Toggle the state to unfilled
       } else {
         // If the word is not saved, save it to the database
-        await axios.post("http://localhost:5000/savedWord/saved", dataToSave);
+        await axios.post(`${backendUrl}/savedWord/saved`, dataToSave);
         console.log(dataToSave);
         setIsWordSaved(true); // Toggle the state to filled
       }

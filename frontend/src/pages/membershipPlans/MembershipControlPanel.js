@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 export default function MembershipControlPanel() {
   const navigate = useNavigate();
   const [membership, setMembership, deleteMemebership] = useState([]);
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/membershipType/view")
+      .get(`${backendUrl}/membershipType/view`)
       .then((result) => setMembership(result.data))
       .catch((err) => console.log(err));
   }, []);
 
   const handleDelete = (id) => {
     axios
-      .delete("http://localhost:5000/membershipType/delete/" + id)
+      .delete(`${backendUrl}/membershipType/delete/` + id)
       .then((res) => {
         console.log(res);
         // Remove the deleted item from the local state

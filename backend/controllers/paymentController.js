@@ -17,17 +17,12 @@
 //     payment.paymentMethod = paymentMethod;
 //     payment.currency = currency;
 
-
-
 // }
 
-
-
-
-import stripe from 'stripe'; // Assuming you've properly configured the Stripe package
-import mongoose from '../db/conn.js';
-import paymentSchema from '../models/paymentModel.js';
-
+import stripe from "stripe"; // Assuming you've properly configured the Stripe package
+import mongoose from "../db/conn.js";
+import paymentSchema from "../models/paymentModel.js";
+import logger from "../logger/logger.js";
 // export const userModel = mongoose.model("user", userSchema);
 export const paymentModel = mongoose.model("payment", paymentSchema);
 // export const membershipTypeModel = mongoose.model("membershipType", membershipTypeSchema);
@@ -51,9 +46,10 @@ export async function makePayment(req, res) {
 
     // Save the payment to the database
     await payment.save();
+    logger.info("Payment created successfully");
 
     // Use Stripe to process the payment
-    const stripe = stripe('your_stripe_secret_key_here'); // Replace with your Stripe secret key
+    const stripe = stripe("your_stripe_secret_key_here"); // Replace with your Stripe secret key
     const paymentIntent = await stripe.paymentIntents.create({
       amount: price * 100, // Stripe requires the amount in cents
       currency: currency,
@@ -62,9 +58,10 @@ export async function makePayment(req, res) {
 
     // Send the client secret back to the client for payment confirmation
     res.json({ clientSecret: paymentIntent.client_secret });
-    
+    logger.info("Payment processed successfully");
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Payment processing failed' });
+    res.status(500).json({ error: "Payment processing failed" });
+    logger.error("Error in processing payment");
   }
 }

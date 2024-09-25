@@ -7,26 +7,42 @@ import {
   deleteFeedbackById,
 } from "../controllers/FeedbackController.js";
 import userController from "../controllers/userController.js";
-
+import { logRequestDetails } from "../middleware/loggerMiddleware.js";
 const feedbackRouter = express.Router();
 
 // Create new feedback for translation
 feedbackRouter.post(
   "/translation",
+  logRequestDetails,
   userController.verify,
   createFeedbackForTranslation
 );
 
 // Get all feedback
-feedbackRouter.get("/", getAllFeedback);
+feedbackRouter.get("/", logRequestDetails, getAllFeedback);
 
 // Get feedback by ID
-feedbackRouter.get("/user", userController.verify, getFeedbackById);
+feedbackRouter.get(
+  "/user",
+  logRequestDetails,
+  userController.verify,
+  getFeedbackById
+);
 
 // Update feedback by ID
-feedbackRouter.put("/update/:id", userController.verify, updateFeedbackById);
+feedbackRouter.put(
+  "/update/:id",
+  logRequestDetails,
+  userController.verify,
+  updateFeedbackById
+);
 
 // Delete feedback by ID
-feedbackRouter.delete("/delete/:id", userController.verify, deleteFeedbackById);
+feedbackRouter.delete(
+  "/delete/:id",
+  logRequestDetails,
+  userController.verify,
+  deleteFeedbackById
+);
 
 export default feedbackRouter;

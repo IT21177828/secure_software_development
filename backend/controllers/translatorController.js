@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import logger from "../logger/logger.js";
 //language
 
 const language = async (req, res) => {
@@ -34,8 +34,10 @@ const language = async (req, res) => {
     );
 
     res.status(200).json(mappedLanguages);
+    logger.info("Languages fetched successfully");
   } catch (error) {
     console.error(error);
+    logger.error("Error fetching languages");
   }
 
   // const options = {
@@ -109,8 +111,10 @@ const translate =
     try {
       const response = await axios.request(options);
       res.status(201).json(response.data.data.translations[0].translatedText);
+      logger.info("Translation successful");
     } catch (error) {
       console.error(error);
+      logger.error("Error in translation");
     }
     /*
      */

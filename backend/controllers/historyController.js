@@ -1,5 +1,5 @@
 import HistoryModel from "../models/historymodel.js";
-
+import logger from "../logger/logger.js";
 // const createHistory = (req, res) => {
 //     const history = new HistoryModel(req.body);
 //     history
@@ -16,14 +16,23 @@ import HistoryModel from "../models/historymodel.js";
 
 const deleteHistory = (req, res) => {
   HistoryModel.findByIdAndDelete(req.params.id)
-    .then((history) => res.json(history))
-    .catch((err) => res.json(err));
+    .then(
+      (history) => res.json(history),
+      logger.info("History deleted successfully")
+    )
+    .catch((err) => res.json(err), logger.error("Error in deleting history"));
 };
 
 const clearAllData = (req, res) => {
   HistoryModel.deleteMany({})
-    .then(() => res.json({ message: "All data cleared successfully" }))
-    .catch((err) => res.status(500).json({ error: err.message }));
+    .then(
+      () => res.json({ message: "All data cleared successfully" }),
+      logger.info("All data cleared successfully")
+    )
+    .catch(
+      (err) => res.status(500).json({ error: err.message }),
+      logger.error("Error in clearing all data")
+    );
 };
 
 async function createHistory(req, res) {
@@ -43,11 +52,13 @@ async function createHistory(req, res) {
 
     const savedTranslation = await translation.save();
     res.json(savedTranslation);
+    logger.info("Translation stored successfully");
   } catch (error) {
     console.error("Error in createHistory:", error);
     res
       .status(500)
       .json({ error: "An error occurred while storing the translation." });
+    logger.error("Error in storing translation data");
   }
 }
 const getHistory = async (req, res) => {
@@ -56,6 +67,7 @@ const getHistory = async (req, res) => {
     const id = req.query.user;
 
     if (!id) {
+      logger.error("User ID not provided");
       return res.status(400).json({
         message: "User ID not provided.",
       });
@@ -69,8 +81,10 @@ const getHistory = async (req, res) => {
     res.json({
       response: historyRecords,
     });
+    logger.info("History fetched successfully");
   } catch (error) {
     console.error("Error in getHistory:", error);
+    logger.error("Error in fetching history data");
     res.status(500).json({
       error: "An error occurred while fetching the user's history.",
     });

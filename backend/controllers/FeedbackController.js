@@ -1,6 +1,6 @@
 import Feedback from "../models/FeedbackModel.js";
 import user from "../models/usermodel.js";
-
+import logger from "../logger/logger.js";
 // Create feedback for translation
 const createFeedbackForTranslation = async (req, res) => {
   try {
@@ -15,10 +15,12 @@ const createFeedbackForTranslation = async (req, res) => {
     // Save the feedback to the database
     const savedFeedback = await feedback.save().then((resp) => {
       res.status(201).json(resp);
+      logger.info("Feedback created successfully");
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+    logger.error("Error in creating feedback");
   }
 };
 
@@ -27,9 +29,11 @@ const getAllFeedback = async (req, res) => {
   try {
     const feedback = await Feedback.find();
     res.status(200).json(feedback);
+    logger.info("Feedback data fetched successfully");
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+    logger.error("Error in fetching feedback data");
   }
 };
 
@@ -39,18 +43,22 @@ const getFeedbackById = async (req, res) => {
     const userId = req.query.userId;
 
     if (!userId) {
+      logger.error("User ID is required");
       return res.status(400).json({ message: "User ID is required" });
     }
 
     const feedback = await Feedback.find({ userId: userId });
     if (!feedback) {
+      logger.error("Feedback not found");
       return res.status(404).json({ message: "Feedback not found" });
     }
 
     res.status(200).json(feedback);
+    logger.info("Feedback data fetched successfully");
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+    logger.error("Error in fetching feedback data");
   }
 };
 
@@ -65,12 +73,15 @@ const updateFeedbackById = async (req, res) => {
       { new: true }
     );
     if (!updatedFeedback) {
+      logger.error("Feedback not found");
       return res.status(404).json({ message: "Feedback not found" });
     }
     res.status(200).json(updatedFeedback);
+    logger.info("Feedback updated successfully");
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+    logger.error("Error in updating feedback");
   }
 };
 
@@ -80,12 +91,15 @@ const deleteFeedbackById = async (req, res) => {
     const { id } = req.params;
     const deletedFeedback = await Feedback.findByIdAndRemove(id);
     if (!deletedFeedback) {
+      logger.error("Feedback not found");
       return res.status(404).json({ message: "Feedback not found" });
     }
     res.status(200).json({ message: "Feedback deleted" });
+    logger.info("Feedback deleted successfully");
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+    logger.error("Error in deleting feedback");
   }
 };
 

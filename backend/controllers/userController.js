@@ -190,11 +190,11 @@ export function checkAge(req, res) {
 
   if (age < 18) {
     res.send("You are not eligible to register");
-    logger.warn("User not eligible to register:", email);
+    logger.warn("User not eligible to register:");
     // other code
   } else {
     res.send("You are eligible to register");
-    logger.info("User eligible to register:", email);
+    logger.info("User eligible to register:");
   }
 }
 
@@ -215,7 +215,7 @@ const verify = (req, res, next) => {
     });
   } else {
     res.status(401).json("You are not authenticated");
-    logger.warn("User not authenticated:", email);
+    logger.warn("User not authenticated:");
   }
 };
 let refreashTokens = [];

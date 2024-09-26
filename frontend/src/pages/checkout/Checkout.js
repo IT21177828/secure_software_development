@@ -5,7 +5,7 @@ import axios from "axios";
 import { useError } from "../../context/checkoutContext";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 export default function Checkout() {
   // Get the object ID from the URL using useParams
 
@@ -34,7 +34,7 @@ export default function Checkout() {
     async function fetchData() {
       const id = params.id.toString();
       const response = await fetch(
-        `http://localhost:5000/membershipType/view/${params.id.toString()}`
+        `${backendUrl}/membershipType/view/${params.id.toString()}`
       );
       if (!response.ok) {
         const message = `An error has occurred: ${response.statusText}`;
@@ -70,7 +70,7 @@ export default function Checkout() {
   const fetchMembershipData = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/membership/getMembershipDetails",
+        `${backendUrl}/membership/getMembershipDetails`,
         {
           email: user.email,
         }
@@ -87,7 +87,7 @@ export default function Checkout() {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios
-        .post("http://localhost:5000/user/details", null, {
+        .post(`${backendUrl}/user/details`, null, {
           headers: {
             authorization: `Bearer ${token}`,
           },
@@ -126,7 +126,7 @@ export default function Checkout() {
       // let email = user.email;
       // console.log(email);  //console print email correctly
       const response = await axios
-        .post("http://localhost:5000/membership/getMembershipDetails", {
+        .post(`${backendUrl}/membership/getMembershipDetails`, {
           //xhr.js:251     POST http://localhost:5000/membership/getMembershipDetails 400 (Bad Request)
           email: data,
         })
@@ -173,14 +173,11 @@ export default function Checkout() {
         alert("Membership already activated");
       } else {
         try {
-          const response = await axios.post(
-            "http://localhost:5000/membership/",
-            {
-              email: user.email,
-              name: form.name,
-              payment: "approved",
-            }
-          );
+          const response = await axios.post(`${backendUrl}/membership/`, {
+            email: user.email,
+            name: form.name,
+            payment: "approved",
+          });
           console.log(response);
           alert("Payment is successfull");
           navigate("/");

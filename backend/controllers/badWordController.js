@@ -1,5 +1,7 @@
 import BadWordModel from "../models/BadWordsModel.js";
 import { myPromises } from "../controllers/myPromise.js";
+import logger from "../logger/logger.js";
+//show all list of B words
 import mongoose from "mongoose";
 
 //function to validate if a string is a valid MongoDB ObjectId or not
@@ -14,11 +16,13 @@ const index = (req, res, next) => {
       res.json({
         response,
       });
+      logger.info("Bad words fetched successfully");
     })
     .catch((err) => {
       res.json({
         messsage: "An Error occured!",
       });
+      logger.error("Error fetching bad words:", err);
     });
 };
 
@@ -31,6 +35,7 @@ const store = (req, res) => {
     return res.status(403).json({
       message: "Invalid or missing user ID! Please provide a valid ID.",
     });
+    logger.error("Name and textToTranslate must be provided.");
   }
 
   let badPhase = new BadWordModel({
@@ -44,11 +49,13 @@ const store = (req, res) => {
       res.json({
         message: "post added successfully!",
       });
+      logger.info("Bad word added successfully");
     })
     .catch((err) => {
       res.json({
         message: "An error occured!",
       });
+      logger.error("Error adding bad word:", err);
     });
 };
 
@@ -65,11 +72,16 @@ const checkBword = (req, res, next) => {
   myPromises(phase)
     .then((result) => {
       if (result.hasBadWords) {
+        logger.warn("Bad word detected in the text:", phase);
         next();
-      } else res.send(result);
+      } else{
+      res.send(result);
+      logger.info("No bad words detected in the text:", phase);
+      } 
     })
     .catch((err) => {
       console.log(err);
+      logger.error("Error checking bad words:", err);
       res.status(400).send("Error occured While checking bad word!");
     });
 };
@@ -93,11 +105,13 @@ const remove = (req, res) => {
       res.json({
         message: "Post deleted successfully!",
       });
+      logger.info("Bad word deleted successfully");
     })
     .catch(() => {
       res.json({
         message: "Error ocured while deleting!",
       });
+      logger.error("Error deleting bad word:", err);
     });
 };
 
@@ -110,6 +124,7 @@ const getAllBWordsById = async (req, res) => {
     return res.status(403).json({
       message: "Invalid or missing user ID! Please provide a valid ID.",
     });
+    logger.error("User not found Login!");
   }
 
   try {
@@ -122,6 +137,7 @@ const getAllBWordsById = async (req, res) => {
     return res.status(200).json({
       response,
     });
+    logger.info("Bad words fetched successfully");
   } catch (error) {
     console.error("Error fetching data:", error);
 
@@ -130,6 +146,7 @@ const getAllBWordsById = async (req, res) => {
       message: "An error occurred while fetching the data.",
       error: error.message,
     });
+    logger.error("Error fetching bad words:", err);
   }
 };
 

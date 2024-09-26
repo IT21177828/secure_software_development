@@ -3,16 +3,21 @@ import userSchema from "../models/usermodel.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import logger from "../logger/logger.js";
 import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
 dotenv.config();
 
+let worstPasswords = [];
+
 const transporter = nodemailer.createTransport({
-  service: "Gmail", // Use the appropriate email service
-  auth: {
-    user: "bpathum@gmail.com", // Replace with your email address
-    pass: "pgfliawbkmllcenm", // Replace with your email password or an app-specific password
-  },
-});
+    service: "Gmail", // Use the appropriate email service
+    auth: {
+      user: "bpathum@gmail.com", // Replace with your email address
+      pass: "pgfliawbkmllcenm", // Replace with your email password or an app-specific password
+    },
+  });
 
 export const userModel = mongoose.model("user", userSchema);
 
@@ -21,59 +26,54 @@ export function hashPasswordNew(password) {
     .pbkdf2Sync(password, "no_salt", 1000, 64, `sha512`)
     .toString(`hex`);
 }
-//add new user
 
-export function registerUser(req, res) {
-  const { firstName, lastName, email, passwordHash, gender, age, address } =
-    req.body;
-
-  if (
-    !firstName ||
-    !lastName ||
-    !email ||
-    !passwordHash ||
-    !gender ||
-    !age ||
-    !address
-  ) {
-    return res.status(400).json({ message: "All fields are required" });
+export async function registerUser(req, res) {
+    try {
+      worstPasswords = fs
+        .readFileSync(path.resolve("./worst-passwords.txt"), "utf-8")
+        .split("\n")
+        .map((password) => password.trim());
+      console.log("Worst passwords loaded successfully");
+      logger.info("Worst passwords loaded successfully");
+    } catch (error) {
+      console.error("Error reading worst-passwords.txt:", error);
+      logger.error("Error reading worst-passwords.txt:", error);
+      return res.status(500).send("Error loading worst passwords.");
+    }
+  
+    const { firstName, lastName, email, passwordHash, gender, age, address } =
+      req.body;
+  
+    if (worstPasswords.includes(passwordHash)) {
+      logger.warn("User tried to use a weak password:", email);
+      return res.status(400).send("The password you entered is too weak.");
+    }
+  
+    let newUser = new userModel({
+      firstName,
+      lastName,
+      email,
+      passwordHash: hashPasswordNew(passwordHash),
+      gender,
+      age,
+      address,
+      userRole: userRole || 'client'  
+    });
+  
+    try {
+      const response = await newUser.save();
+      res
+        .status(201)
+        .json({ message: "User added successfully", user: response });
+      // Send confirmation email logic here...
+      logger.info("User added successfully:", email);
+    } catch (err) {
+      res.status(500).send(err);
+      console.log(err);
+      logger.error("Error adding user:", err);
+    }
   }
 
-  let newUser = new userModel();
-  newUser.firstName = firstName;
-  newUser.lastName = lastName;
-  newUser.email = email;
-  newUser.passwordHash = hashPasswordNew(passwordHash);
-  newUser.gender = gender;
-  newUser.age = age;
-  newUser.address = address;
-
-  newUser
-    .save()
-    .then((response) => {
-      res.send(response);
-      console.log("User added successfully");
-
-      const mailOptions = {
-        from: "it21180552@my.sliit.lk", // Replace with your email address
-        to: newUser.email, // Replace with the recipient's email address
-        subject: "Hello from Nodemailer",
-        text: "This is a test email sent from Nodemailer.",
-      };
-
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error("Error sending email:", error);
-        } else {
-          console.log("Email sent:", info.response);
-        }
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.send("Something went wrong while adding user!");
-    });
-}
 
 // create an admin account
 export function adminAccount(req, res) {
@@ -100,16 +100,31 @@ export function adminAccount(req, res) {
 
 // login user
 
+// const generateAccessToken = (user) => {
+//   return jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+//     expiresIn: process.env.JWT_EXPIRE,
+//   });
+// };
+// const generateRefreshToken = (user) => {
+//   return jwt.sign({ email: user.email }, process.env.REFRESH_JWT_SECRET, {
+//     expiresIn: "58m",
+//   });
+// };
+
+// login user
+
 const generateAccessToken = (user) => {
-  return jwt.sign({ email: user.email }, process.env.JWT_ACCESS_TOKEN_SECRET, {
-    expiresIn: "58m",
-  });
-};
-const generateRefreshToken = (user) => {
-  return jwt.sign({ email: user.email }, process.env.JWT_REFRESH_TOKEN_SECRET, {
-    expiresIn: "58m",
-  });
-};
+    console.log(user.userRole)
+    return jwt.sign({ email: user.email, role: user.userRole }, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
+  };
+  
+  const generateRefreshToken = (user) => {
+    return jwt.sign({ email: user.email, role: user.userRole }, process.env.REFRESH_TOKEN_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
+  };
 
 const loginUser = (req, res) => {
   const { email, passwordHash } = req.body;
@@ -131,9 +146,10 @@ const loginUser = (req, res) => {
           user.email === "admin@gmail.com" &&
           user.passwordHash === hashPasswordNew("0000")
         ) {
+          console.log("hii")
           const A_token = generateAccessToken(user);
           const R_token = generateRefreshToken(user);
-
+          console.log(A_token)
           // req.session.userId = response._id;
 
           refreashTokens.push(R_token);
@@ -144,11 +160,12 @@ const loginUser = (req, res) => {
             refreshToken: R_token,
             user: user,
           });
+          logger.info("Admin logged in successfully:", email);
         } else {
           if (user.passwordHash == hashPasswordNew(passwordHash)) {
             const A_token = generateAccessToken(user);
             const R_token = generateRefreshToken(user);
-
+            logger.info(`User logged in successfully: ${email}`);
             res.status(200).json({
               message: "Auth successful",
               accessToken: A_token,
@@ -157,14 +174,17 @@ const loginUser = (req, res) => {
             });
           } else {
             res.send("Incorrect password");
+            logger.warn("Incorrect password:", email);
           }
         }
       } else {
         res.send("User not found");
+        logger.warn("User not found:", email);
       }
     })
     .catch((err) => {
       console.log(err);
+      logger.error("Error logging in user:", err);
       res.send("Something went wrong while login!");
     });
 };
@@ -190,12 +210,15 @@ const userDetails = (req, res) => {
           message: "User Details",
           user: user,
         });
+        logger.info("User details sent successfully:", email);
       } else {
         res.send("User not found");
+        logger.warn("User not found:", email);
       }
     })
     .catch((err) => {
       console.log(err);
+      logger.error("Error getting user details:", err);
       res.send("Something went wrong while getting user details!");
     });
 };
@@ -206,66 +229,140 @@ export function checkAge(req, res) {
 
   if (age < 18) {
     res.send("You are not eligible to register");
+    logger.warn("User not eligible to register:");
     // other code
   } else {
     res.send("You are eligible to register");
+    logger.info("User eligible to register:");
   }
 }
 
 const verify = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+    const authHeader = req.headers.authorization;
+  
+    if (authHeader) {
+      const token = authHeader.split(" ")[1];
+  
+      jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+          logger.error("Token is not valid:", err);
+          return res.status(403).json("Token is not valid!");
+        }
+  
+        req.user = user;
+        next();
+      });
+    } else {
+      res.status(401).json("You are not authenticated");
+      logger.warn("User not authenticated:");
+    }
+  };
 
-  if (authHeader) {
-    const token = authHeader.split(" ")[1];
-
-    jwt.verify(token, process.env.JWT_ACCESS_TOKEN_SECRET, (err, user) => {
-      if (err) {
-        return res.status(403).json("Token is not valid!");
-      }
-
-      req.user = user;
-      next();
-    });
-  } else {
-    res.status(401).json("You are not authenticated");
-  }
-};
 let refreashTokens = [];
 
 const refresh = (req, res) => {
-  const refreshToken = req.body.token;
-
-  if (!refreshToken) return res.status(401).json("You are not authenticated!");
-
-  if (!refreashTokens.includes(refreshToken)) {
-    return res.status(403).json("Refresh Token Invalied!");
-  }
-
-  jwt.verify(
-    refreshToken,
-    process.env.JWT_REFRESH_TOKEN_SECRET,
-    (err, user) => {
+    const refreshToken = req.body.token;
+  
+    if (!refreshToken) {
+      logger.warn("You are not authenticated:", email);
+      return res.status(403).json("You are not authenticated!");
+    }
+  
+    if (!refreashTokens.includes(refreshToken)) {
+      logger.warn("Refresh Token Invalied:", email);
+      return res.status(403).json("Refresh Token Invalied!");
+    }
+  
+    jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET, (err, user) => {
       err && console.log(err);
+      if (err) {
+        logger.error("Token is not valid:", err);
+        return res.status(403).json("Token is not valid!");
+      }
       refreashTokens = refreashTokens.filter((token) => token !== refreshToken);
-
+  
       const newA_token = generateAccessToken(user);
       const newR_token = generateRefreshToken(user);
-
+  
       refreashTokens.push(newR_token);
       res.status(200).json({
         accessToken: newA_token,
         refreshToken: newR_token,
       });
+      logger.info("Token refreshed successfully:", email);
+    });
+  };
+
+  const showName = (req, res) => {
+    console.log("auth work");
+    if (req.user.id === req.params.id || req.user.isAdmin) {
+      console.log("admin or user");
     }
-  );
+    res.send("hellooo");
+  };
+
+  const verifyAccessToken = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    console.log("This is auth header:")
+    console.log(authHeader)
+    if (authHeader) {
+      // const token = authHeader.split(" ")[1];
+      const token = authHeader;
+  
+      console.log("this is the token")
+      console.log(token)
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+        if (err) {
+          return res.status(403).json("Token is not valid!");
+        }
+        req.user = user;
+        console.log(user)
+        next();
+      });
+    } else {
+      res.status(401).json("You are not authenticated!");
+    }
+  };
+
+const verifyAdmin = (req, res, next) => {
+  const user = req.user; // Assume req.user is populated by your authentication middleware
+  console.log(user)
+  console.log(user.role)
+
+  if (user && user.role === 'admin') {
+    next(); // User is admin, proceed to the next middleware/route handler
+  } else {
+    res.status(403).json({ message: 'Access denied. Admins only.' });
+  }
 };
 
-const showName = (req, res) => {
-  console.log("auth work");
-  if (req.user.id === req.params.id || req.user.isAdmin) {
-    console.log("admin or user");
+
+let refreshTokens = [];
+
+const refreshAccessToken = (req, res) => {
+  const { token: refreshToken } = req.body;
+
+  if (!refreshToken) return res.status(401).json("You are not authenticated!");
+
+  if (!refreshTokens.includes(refreshToken)) {
+    return res.status(403).json("Refresh Token is not valid!");
   }
-  res.send("hellooo");
+
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+    if (err) return res.status(403).json("Refresh token is not valid or expired!");
+
+    refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
+
+    const newAccessToken = userController.generateAccessToken(user);
+    const newRefreshToken = userController.generateRefreshToken(user);
+
+    refreshTokens.push(newRefreshToken);
+
+    res.status(200).json({
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
+  });
 };
 
 export default {
@@ -274,4 +371,9 @@ export default {
   showName,
   loginUser,
   userDetails,
+  generateAccessToken,
+  generateRefreshToken,
+  verifyAdmin,
+  refreshAccessToken,
+  verifyAccessToken
 };

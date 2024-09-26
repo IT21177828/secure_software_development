@@ -41,6 +41,12 @@ const user = new mongoose.Schema({
         required: true,
         unique: true
     },
+    userRole:{
+        type : String,
+        required : true,
+        default: 'client', 
+        enum: ['client', 'admin'] 
+    }
 
     
 });

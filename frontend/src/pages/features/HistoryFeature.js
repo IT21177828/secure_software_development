@@ -4,6 +4,7 @@ import axios from "axios";
 import deletelogo from "../../assets/delete.svg";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 const HistoryFeature = (userId) => {
   const [history, setHistory] = useState([]);
   const user = userId.userId;
@@ -13,7 +14,7 @@ const HistoryFeature = (userId) => {
 
     try {
       const posts = await axios
-        .get("http://localhost:5000/history/getHistory", {
+        .get(`${backendUrl}/history/getHistory`, {
           params: id,
         })
         .then((response) => {
@@ -54,7 +55,7 @@ const HistoryFeature = (userId) => {
     if (confirmation) {
       // User clicked "OK," proceed with the deletion
       axios
-        .delete("http://localhost:5000/history/deleteHistory/" + id)
+        .delete(`${backendUrl}/history/deleteHistory/` + id)
         .then((res) => {
           // Remove the deleted item from the local state
           setHistory((prevHistory) =>
@@ -77,7 +78,7 @@ const HistoryFeature = (userId) => {
     if (confirmation) {
       // User clicked "OK," proceed with the deletion
       axios
-        .delete("http://localhost:5000/history/clearAllData")
+        .delete(`${backendUrl}/history/clearAllData`)
         .then((res) => {
           // Remove all items from the local state
           setHistory([]);

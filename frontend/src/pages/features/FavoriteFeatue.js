@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { checkWordExistence } from "../../components/api";
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 const FavoriteFeatue = (userId) => {
   const [savedWords, setSavedWords] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
@@ -23,7 +24,7 @@ const FavoriteFeatue = (userId) => {
     if (confirmation) {
       setIsEditing(false);
       axios
-        .put("http://localhost:5000/savedWord/updateMessage/${editingItemId}", {
+        .put(`${backendUrl}/savedWord/updateMessage/${editingItemId}`, {
           message,
         })
         .then((result) => {
@@ -48,7 +49,7 @@ const FavoriteFeatue = (userId) => {
     try {
       console.log(id);
       const posts = await axios
-        .get("http://localhost:5000/savedWord/getSavedWord", {
+        .get(`${backendUrl}/savedWord/getSavedWord`, {
           params: id,
         })
 
@@ -92,7 +93,7 @@ const FavoriteFeatue = (userId) => {
       // User clicked "OK," proceed with the deletion
       axios
         .delete(
-          `http://localhost:5000/savedWord/delete?textToTranslate=${textToTranslate}`
+          `${backendUrl}/savedWord/delete?textToTranslate=${textToTranslate}`
         )
         .then((res) => {
           console.log(res);

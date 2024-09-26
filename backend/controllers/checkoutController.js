@@ -1,11 +1,19 @@
 import CheckOutModel from "../models/checkoutModel.js";
 import crypto from "crypto";
+import logger from "../logger/logger.js";
 
 const getcheckout = (req, res) => {
   CheckOutModel.find()
-    .then((checkout) => res.json(checkout))
-    .catch((err) => res.json(err));
+    .then(
+      (checkout) => res.json(checkout),
+      logger.info("checkout data fetched successfully")
+    )
+    .catch(
+      (err) => res.json(err),
+      logger.error("Error in fetching checkout data")
+    );
 };
+
 
 const createCheckout = async (req, res) => {
   try {
@@ -15,24 +23,29 @@ const createCheckout = async (req, res) => {
     // Validate the email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
+      logger.error("Invalid email address");
       return res.status(400).json({ error: "Invalid email address" });
     }
 
     // Validate the cardNumber (assuming it's a numeric string with a specific length)
     const cardNumberRegex = /^[0-9]{16}$/;
     if (!cardNumberRegex.test(cardNumber)) {
+      logger.error("Invalid card number");
       return res.status(400).json({ error: "Invalid card number" });
     }
 
     // Validate the CVV (assuming it's a 3 or 4-digit numeric string)
     const cvvRegex = /^[0-9]{3,4}$/;
     if (!cvvRegex.test(cvv)) {
+      logger.error("Invalid CVV");
+
       return res.status(400).json({ error: "Invalid CVV" });
     }
 
     // Validate the expirationDate (assuming it's in the format 'MM/YY')
     const expirationDateRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
     if (!expirationDateRegex.test(expirationDate)) {
+      logger.error("Invalid expiration date");
       return res.status(400).json({ error: "Invalid expiration date" });
     }
 
@@ -75,11 +88,13 @@ const createCheckout = async (req, res) => {
 
     const savedCheckout = await checkout.save();
     res.json(savedCheckout);
+    logger.info("Checkout data stored");
   } catch (error) {
     console.error(error);
     res
       .status(500)
       .json({ error: "An error occurred while storing the checkout." });
+    logger.error("Error in storing checkout data");
   }
 };
 

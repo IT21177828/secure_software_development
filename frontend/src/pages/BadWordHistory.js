@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 export default function BadWordHistory({ userId }) {
   const [postDetails, setPostDetails] = useState([]);
 
@@ -10,7 +10,7 @@ export default function BadWordHistory({ userId }) {
   async function getDetails() {
     const id = { user };
 
-    const posts = await axios.get("http://localhost:5000/bad/badpost", {
+    const posts = await axios.get(`${backendUrl}/bad/badpost`, {
       params: id,
     });
     console.log(posts.data.response);

@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 export default function BadwordFeature(userId) {
   const [postDetails, setPostDetails] = useState([]);
 
@@ -11,7 +12,7 @@ export default function BadwordFeature(userId) {
 
     try {
       const posts = await axios
-        .get("http://localhost:5000/bad/badpost", {
+        .get(`${backendUrl}/bad/badpost`, {
           params: id,
         })
         .then((response) => {

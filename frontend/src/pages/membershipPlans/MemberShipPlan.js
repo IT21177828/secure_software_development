@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 export default function MemberShipPlan() {
   const [membership, SetMembership] = useState([]);
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/membershipType/view")
+      .get(`${backendUrl}/membershipType/view`)
       .then((result) => SetMembership(result.data))
       .catch((err) => console.log(err));
   }, []);

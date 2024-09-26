@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import session from "express-session"; // Switch to express-session
 import passport from "passport";
 import Stripe from "stripe";
-
+import { logRequestDetails } from "./middleware/loggerMiddleware.js";
 import userRouter from "./Routers/userRouter.js";
 import membershipRouter from "./Routers/memberShipRouter.js";
 import membershipTypeRouter from "./Routers/membershipTypeRouter.js";
@@ -67,6 +67,9 @@ app.use(express.json());
 
 // Serve static files (if needed)
 app.use(express.static("public"));
+
+// Apply the logging middleware globally
+app.use(logRequestDetails);
 
 // API Routes
 app.use("/auth", authRoute);

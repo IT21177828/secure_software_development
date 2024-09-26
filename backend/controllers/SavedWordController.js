@@ -175,9 +175,9 @@ const getSavedWord = async (req, res) => {
 
     // Validate the ID: ensure it's either a string or a valid ObjectId
     if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+      logger.error("User ID not provided");
       return res.status(403).json({
         message: "Invalid or missing user ID! Please provide a valid ID.",
-        logger.error("User ID not provided");
       });
     }
 

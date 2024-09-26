@@ -1,4 +1,5 @@
 import mongoose from "../db/conn.js";
+import rateLimit from "express-rate-limit";
 import userSchema from "../models/usermodel.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
@@ -21,12 +22,26 @@ const transporter = nodemailer.createTransport({
 
 export const userModel = mongoose.model("user", userSchema);
 
+// Login rate limiter
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+  message: "Too many login attempts. Please try again later.",
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: function (req, res) {
+    res.status(429).json({ message: "Too many login attempts." });
+    logger.warn(`Too many login attempts: ${req.body.email}`);
+  },
+});
+
 export function hashPasswordNew(password) {
   return crypto
     .pbkdf2Sync(password, "no_salt", 1000, 64, `sha512`)
     .toString(`hex`);
 }
 
+      // Add new user with password strength check
 export async function registerUser(req, res) {
     try {
       worstPasswords = fs
@@ -41,8 +56,17 @@ export async function registerUser(req, res) {
       return res.status(500).send("Error loading worst passwords.");
     }
   
-    const { firstName, lastName, email, passwordHash, gender, age, address } =
-      req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      passwordHash,
+      gender,
+      age,
+      address,
+      provider,
+      providerId,
+    } = req.body;
   
     if (worstPasswords.includes(passwordHash)) {
       logger.warn("User tried to use a weak password:", email);
@@ -57,7 +81,8 @@ export async function registerUser(req, res) {
       gender,
       age,
       address,
-      userRole: userRole || 'client'  
+      provider,
+      providerId,
     });
   
     try {
@@ -73,7 +98,6 @@ export async function registerUser(req, res) {
       logger.error("Error adding user:", err);
     }
   }
-
 
 // create an admin account
 export function adminAccount(req, res) {
@@ -371,9 +395,11 @@ export default {
   showName,
   loginUser,
   userDetails,
+  loginLimiter,
   generateAccessToken,
   generateRefreshToken,
   verifyAdmin,
   refreshAccessToken,
   verifyAccessToken
 };
+

@@ -50,7 +50,11 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="/" exact element={<Translate />} />
-        <Route path="/dashboard/:id" exact element={<AuthenticatedUserHome />} />
+        <Route
+          path="/dashboard/:id"
+          exact
+          element={<AuthenticatedUserHome />}
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/feedback" element={<FeedbackTable />} />
         <Route path="/register" element={<Registration />} />

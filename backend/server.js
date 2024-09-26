@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import session from "express-session"; // Switch to express-session
 import passport from "passport";
 import Stripe from "stripe";
-
+import { logRequestDetails } from "./middleware/loggerMiddleware.js";
 import userRouter from "./Routers/userRouter.js";
 import membershipRouter from "./Routers/memberShipRouter.js";
 import membershipTypeRouter from "./Routers/membershipTypeRouter.js";
@@ -22,6 +22,25 @@ dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 const app = express();
+
+const allowedOrigins = ['http://localhost:3000', 'http://example.com'];
+
+const corsOptions = (req, callback) => {
+  let corsOptions;
+  const origin = req.header('Origin');
+  console.log({"origin":origin})  
+  if (allowedOrigins.includes(origin)) {
+    corsOptions = { origin: origin, credentials: true }; // Reflect the request origin in the CORS response
+  } else {
+    corsOptions = { origin: false }; // Disable CORS for this request
+  }  
+  callback(null, corsOptions); // Pass the corsOptions object to the middleware
+};
+
+
+// Apply the CORS middleware dynamically based on the origin
+app.use(cors(corsOptions));
+
 
 // Initialize Stripe with secret key from environment variables
 const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -43,20 +62,14 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session()); // Persistent login sessions
 
-// Enable CORS to allow frontend (React) requests
-app.use(
-  cors({
-    origin: "http://localhost:3000", // Your frontend URL
-    methods: "GET,POST,PUT,DELETE",
-    credentials: true, // Allow cookies and authorization headers
-  })
-);
-
 // Body parser for JSON data
 app.use(express.json());
 
 // Serve static files (if needed)
 app.use(express.static("public"));
+
+// Apply the logging middleware globally
+app.use(logRequestDetails);
 
 // API Routes
 app.use("/auth", authRoute);

@@ -5,6 +5,7 @@ import timelogo from "../../assets/time.svg";
 import binlogo from "../../assets/bin.svg";
 import deletelogo from "../../assets/delete.svg";
 import axios from "axios";
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 const History = () => {
   const [showClearDataConfirmation, setShowClearDataConfirmation] =
     useState(false);
@@ -15,14 +16,14 @@ const History = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/history/getHistory")
+      .get(`${backendUrl}/history/getHistory`)
       .then((result) => SetHistory(result.data))
       .catch((err) => console.log(err));
   }, []);
 
   const handleDelete = (id) => {
     axios
-      .delete("http://localhost:5000/history/deleteHistory/" + id)
+      .delete(`${backendUrl}/history/deleteHistory/` + id)
       .then((res) => {
         console.log(res);
         // Remove the deleted item from the local state
@@ -150,7 +151,7 @@ export default History;
 const ClearDataConfirmation = ({ onCancel, onConfirm }) => {
   const handleClearData = () => {
     axios
-      .delete("http://localhost:5000/history/clearAllData")
+      .delete(`${backendUrl}/history/clearAllData`)
       .then((res) => {
         console.log(res);
         onConfirm();

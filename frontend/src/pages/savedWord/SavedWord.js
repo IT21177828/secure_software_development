@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import deletelogo from "../../assets/delete.svg";
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 const SavedWords = () => {
   const [savedWords, setSavedWords] = useState([]);
 
   const fetchData = () => {
     axios
-      .get("http://localhost:5000/savedWord/getSavedWord")
+      .get(`${backendUrl}/savedWord/getSavedWord`)
       .then((response) => {
         setSavedWords(response.data);
       })
@@ -28,7 +29,7 @@ const SavedWords = () => {
 
   const handleDelete = (id) => {
     axios
-      .delete("http://localhost:5000/savedWord/deleteSavedWord/" + id)
+      .delete(`${backendUrl}/savedWord/deleteSavedWord/` + id)
       .then((res) => {
         console.log(res);
 

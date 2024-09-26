@@ -46,6 +46,7 @@ export async function registerUser(req, res) {
     gender,
     age,
     address,
+    userRole: userRole || 'client'  
   });
 
   try {
@@ -64,42 +65,59 @@ export async function registerUser(req, res) {
 
 // create an admin account
 export function adminAccount(req, res) {
-  const { firstName, lastName, email, passwordHash, gender, age, address } =
-    req.body;
+  // const { firstName, lastName, email, passwordHash, gender, age, address } = req.body;
 
   let newUser = new userModel();
   newUser.firstName = "admin";
   newUser.lastName = "superadmin";
-  newUser.email = "admin@gmail.com";
+  newUser.email = "admin3@gmail.com";
   newUser.passwordHash = hashPasswordNew("0000");
   newUser.gender = "---";
   newUser.age = 12;
   newUser.address = "admin";
+  newUser.userRole = "admin";
+  newUser.providerId = "h";
+  newUser.provider="g";
+
 
   newUser
     .save()
     .then((response) => {
-      res.send(response);
+      // res.send(response);
       console.log("User added successfully");
       logger.info("User added successfully:", email);
     })
     .catch((err) => {
-      res.send(err);
+      // res.send(err);
       console.log(err);
       logger.error("Error adding user:", err);
     });
 }
 
+
 // login user
 
+// const generateAccessToken = (user) => {
+//   return jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+//     expiresIn: process.env.JWT_EXPIRE,
+//   });
+// };
+// const generateRefreshToken = (user) => {
+//   return jwt.sign({ email: user.email }, process.env.REFRESH_JWT_SECRET, {
+//     expiresIn: "58m",
+//   });
+// };
+
 const generateAccessToken = (user) => {
-  return jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+  console.log(user.userRole)
+  return jwt.sign({ email: user.email, role: user.userRole }, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: process.env.JWT_EXPIRE,
   });
 };
+
 const generateRefreshToken = (user) => {
-  return jwt.sign({ email: user.email }, process.env.REFRESH_JWT_SECRET, {
-    expiresIn: "58m",
+  return jwt.sign({ email: user.email, role: user.userRole }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE,
   });
 };
 
@@ -116,9 +134,10 @@ const loginUser = (req, res) => {
           user.email === "admin@gmail.com" &&
           user.passwordHash === hashPasswordNew("0000")
         ) {
+          console.log("hii")
           const A_token = generateAccessToken(user);
           const R_token = generateRefreshToken(user);
-
+          console.log(A_token)
           // req.session.userId = response._id;
 
           refreashTokens.push(R_token);
@@ -268,10 +287,77 @@ export function updateUser(req, re) {
     req.body;
 }
 
+const verifyAdmin = (req, res, next) => {
+  const user = req.user; // Assume req.user is populated by your authentication middleware
+  console.log(user)
+  console.log(user.role)
+
+  if (user && user.role === 'admin') {
+    next(); // User is admin, proceed to the next middleware/route handler
+  } else {
+    res.status(403).json({ message: 'Access denied. Admins only.' });
+  }
+};
+const verifyAccessToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  console.log("This is auth header:")
+  console.log(authHeader)
+  if (authHeader) {
+    // const token = authHeader.split(" ")[1];
+    const token = authHeader;
+
+    console.log("this is the token")
+    console.log(token)
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+      if (err) {
+        return res.status(403).json("Token is not valid!");
+      }
+      req.user = user;
+      console.log(user)
+      next();
+    });
+  } else {
+    res.status(401).json("You are not authenticated!");
+  }
+};
+
+let refreshTokens = [];
+
+const refreshAccessToken = (req, res) => {
+  const { token: refreshToken } = req.body;
+
+  if (!refreshToken) return res.status(401).json("You are not authenticated!");
+
+  if (!refreshTokens.includes(refreshToken)) {
+    return res.status(403).json("Refresh Token is not valid!");
+  }
+
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+    if (err) return res.status(403).json("Refresh token is not valid or expired!");
+
+    refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
+
+    const newAccessToken = userController.generateAccessToken(user);
+    const newRefreshToken = userController.generateRefreshToken(user);
+
+    refreshTokens.push(newRefreshToken);
+
+    res.status(200).json({
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
+  });
+};
+
 export default {
   verify,
   refresh,
   showName,
   loginUser,
   userDetails,
+  generateAccessToken,
+  generateRefreshToken,
+  verifyAdmin,
+  refreshAccessToken,
+  verifyAccessToken
 };

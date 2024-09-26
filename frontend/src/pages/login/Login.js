@@ -66,7 +66,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("submit");
+    console.log(backendUrl);
     try {
       const response = await axios
       

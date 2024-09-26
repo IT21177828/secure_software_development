@@ -70,7 +70,7 @@ export default function Login() {
     try {
       const response = await axios
 
-        .post(`${backendUrl}/local/callback`, {
+        .post(`${backendUrl}/auth/local/callback`, {
           email,
           password: passwordHash,
         })

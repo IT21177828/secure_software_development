@@ -47,6 +47,10 @@ const user = new mongoose.Schema({
     // required: true,
     unique: true,
   },
+  photo: {
+    type: String,
+    required: false,
+  },
   userRole: {
     type: String,
     required: true,

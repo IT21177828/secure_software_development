@@ -15,6 +15,7 @@ const isValidObjectId = (id) => {
 const deleteSavedWord = (req, res) => {
   try {
     const id = req.params.id;
+    console.log(id);
     // Validate the ID: ensure it's either a string or a valid ObjectId
     if (!id || typeof id !== "string" || !isValidObjectId(id)) {
       return res.status(403).json({
@@ -97,7 +98,7 @@ const deleteWord = async (req, res) => {
 
 const getSavedWordExist = async (req, res) => {
   try {
-    const { textToTranslate } = req.body;
+    const { textToTranslate } = req.query;
 
     if (!textToTranslate || typeof textToTranslate !== "string") {
       return res

@@ -78,24 +78,28 @@ export default function AuthenticatedUserHome() {
 
   //   const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    axios
-      .get(`${backendUrl}/auth/login/success`, {
-        withCredentials: true,
-      })
-      .then((response) => {
-        setUser(response.data.user.user);
-        console.log(response.data);
-        const accessToken = response.data.user.accessToken;
-        const refreshToken = response.data.user.refreshToken;
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
-        setIsLogedIn(true);
-      })
-      .catch((error) => {
-        console.error("Login failed: ", error);
-      });
-  }, []);
+  const checkValidLogin = async () => {
+    try {
+      await axios
+        .get(`${backendUrl}/auth/login/success`, {
+          withCredentials: true,
+        })
+        .then((response) => {
+          setUser(response.data.user.user);
+          console.log(response.data);
+          const accessToken = response.data.user.accessToken;
+          const refreshToken = response.data.user.refreshToken;
+          localStorage.setItem("accessToken", accessToken);
+          localStorage.setItem("refreshToken", refreshToken);
+          setIsLogedIn(true);
+        })
+        .catch((error) => {
+          console.error("Login failed: ", error);
+        });
+    } catch (error) {
+      console.error("Login failed: ", error);
+    }
+  };
 
   axiosJWT.interceptors.request.use(
     async (config) => {
@@ -167,9 +171,11 @@ export default function AuthenticatedUserHome() {
   };
 
   useEffect(() => {
-    getLanguages();
-    // Fetch user information when the component mounts
-    fetchUserData();
+    checkValidLogin().then(() => {
+      getLanguages();
+      // Fetch user information when the component mounts
+      fetchUserData();
+    });
   }, []);
 
   const translate = async () => {
@@ -212,7 +218,11 @@ export default function AuthenticatedUserHome() {
       console.log(resp);
       console.log("Translation data:", resp);
 
-      await axios.post(`${backendUrl}/history/save`, resp);
+      await axios.post(`${backendUrl}/history/save`, resp, {
+        headers: {
+          authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
       console.log("Translation data stored successfully");
     } catch (error) {
       console.error("Error storing translation data:", error);
@@ -309,7 +319,10 @@ export default function AuthenticatedUserHome() {
       <header className="absolute z-50 bg-gray-900 w-full float-right p-4 flex justify-between items-center md:px-8">
         <div className="flex items-center">
           <img
-            src="https://firebasestorage.googleapis.com/v0/b/translator-spm.appspot.com/o/userImg.png?alt=media&token=21e4bdb5-afe8-440d-a448-67edadb3b63a" // Replace with your user icon URL
+            src={
+              user.photo ||
+              "https://firebasestorage.googleapis.com/v0/b/translator-spm.appspot.com/o/userImg.png?alt=media&token=21e4bdb5-afe8-440d-a448-67edadb3b63a"
+            } // Replace with your user icon URL
             alt="User Icon"
             className="w-8 h-8 rounded-full mr-2"
           />

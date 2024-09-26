@@ -46,7 +46,7 @@ app.use(passport.session()); // Persistent login sessions
 // Enable CORS to allow frontend (React) requests
 app.use(
   cors({
-    origin: "http://localhost:3000", // Your frontend URL
+    origin: process.env.CLIENT_BASE_URL, // Your frontend URL
     methods: "GET,POST,PUT,DELETE",
     credentials: true, // Allow cookies and authorization headers
   })

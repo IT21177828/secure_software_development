@@ -2,7 +2,7 @@ import { Router } from "express";
 import passport from "passport";
 
 const router = Router();
-const CLIENT_URL = "http://localhost:3000";
+const CLIENT_URL = process.env.CLIENT_BASE_URL;
 
 // Google login
 router.get(
@@ -18,7 +18,7 @@ router.get(
   }),
   (req, res) => {
     const userId = req.user._id;
-    res.redirect(`http://localhost:3000/dashboard/${userId}`);
+    res.redirect(`${CLIENT_URL}/dashboard/${userId}`);
   }
 );
 
@@ -53,7 +53,7 @@ router.get(
   }),
   (req, res) => {
     const userId = req.user._id;
-    res.redirect(`http://localhost:3000/dashboard/${userId}`);
+    res.redirect(`${CLIENT_URL}/dashboard/${userId}`);
   }
 );
 

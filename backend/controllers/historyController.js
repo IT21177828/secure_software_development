@@ -1,21 +1,21 @@
 import HistoryModel from "../models/historymodel.js";
+import mongoose from "mongoose";
 
-// const createHistory = (req, res) => {
-//     const history = new HistoryModel(req.body);
-//     history
-//         .save()
-//         .then(savedHistory => res.json(savedHistory))
-//         .catch(err => res.json(err))
-// };
-
-// const getHistory = (req, res) => {
-//   HistoryModel.find()
-//     .then((history) => res.json(history))
-//     .catch((err) => res.json(err));
-// };
+//function to validate if a string is a valid MongoDB ObjectId or not
+const isValidObjectId = (id) => {
+  return mongoose.Types.ObjectId.isValid(id);
+};
 
 const deleteHistory = (req, res) => {
-  HistoryModel.findByIdAndDelete(req.params.id)
+  const id = req.params.id;
+
+  // Validate the ID: ensure it's either a string or a valid ObjectId
+  if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+    return res.status(403).json({
+      message: "Invalid or missing user ID! Please provide a valid ID.",
+    });
+  }
+  HistoryModel.findByIdAndDelete(id)
     .then((history) => res.json(history))
     .catch((err) => res.json(err));
 };
@@ -31,6 +31,12 @@ async function createHistory(req, res) {
     const name = req.body.name; // Extract 'name' from req.body directly
     const { inputLanguage, outputLanguage, textToTranslate, translatedText } =
       req.body; // Extract other properties
+    // Validate the ID: ensure it's either a string or a valid ObjectId
+    if (!name || typeof name !== "string" || !isValidObjectId(name)) {
+      return res.status(403).json({
+        message: "Invalid or missing user ID! Please provide a valid ID.",
+      });
+    }
 
     // Create a new translation document and save it to the database
     const translation = new HistoryModel({
@@ -55,9 +61,10 @@ const getHistory = async (req, res) => {
     // Extract the user ID from the query parameters
     const id = req.query.user;
 
-    if (!id) {
-      return res.status(400).json({
-        message: "User ID not provided.",
+    // Validate the ID: ensure it's either a string or a valid ObjectId
+    if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+      return res.status(403).json({
+        message: "Invalid or missing user ID! Please provide a valid ID.",
       });
     }
 

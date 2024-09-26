@@ -1,26 +1,28 @@
 import HistoryModel from "../models/historymodel.js";
 import logger from "../logger/logger.js";
-// const createHistory = (req, res) => {
-//     const history = new HistoryModel(req.body);
-//     history
-//         .save()
-//         .then(savedHistory => res.json(savedHistory))
-//         .catch(err => res.json(err))
-// };
+import mongoose from "mongoose";
 
-// const getHistory = (req, res) => {
-//   HistoryModel.find()
-//     .then((history) => res.json(history))
-//     .catch((err) => res.json(err));
-// };
+//function to validate if a string is a valid MongoDB ObjectId or not
+const isValidObjectId = (id) => {
+  return mongoose.Types.ObjectId.isValid(id);
+};
 
 const deleteHistory = (req, res) => {
-  HistoryModel.findByIdAndDelete(req.params.id)
-    .then(
-      (history) => res.json(history),
-      logger.info("History deleted successfully")
-    )
-    .catch((err) => res.json(err), logger.error("Error in deleting history"));
+  const id = req.params.id;
+
+  // Validate the ID: ensure it's either a string or a valid ObjectId
+  if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+    return res.status(403).json({
+      message: "Invalid or missing user ID! Please provide a valid ID.",
+    });
+  }
+  HistoryModel.findByIdAndDelete(id)
+    .then((history) => res.json(history).
+    logger.info("History deleted successfully")
+  )
+    .catch((err) => res.json(err),
+    logger.error("History not found")
+  );
 };
 
 const clearAllData = (req, res) => {
@@ -40,6 +42,12 @@ async function createHistory(req, res) {
     const name = req.body.name; // Extract 'name' from req.body directly
     const { inputLanguage, outputLanguage, textToTranslate, translatedText } =
       req.body; // Extract other properties
+    // Validate the ID: ensure it's either a string or a valid ObjectId
+    if (!name || typeof name !== "string" || !isValidObjectId(name)) {
+      return res.status(403).json({
+        message: "Invalid or missing user ID! Please provide a valid ID.",
+      });
+    }
 
     // Create a new translation document and save it to the database
     const translation = new HistoryModel({
@@ -61,15 +69,17 @@ async function createHistory(req, res) {
     logger.error("Error in storing translation data");
   }
 }
+
 const getHistory = async (req, res) => {
   try {
     // Extract the user ID from the query parameters
     const id = req.query.user;
 
-    if (!id) {
+    // Validate the ID: ensure it's either a string or a valid ObjectId
+    if (!id || typeof id !== "string" || !isValidObjectId(id)) {
       logger.error("User ID not provided");
-      return res.status(400).json({
-        message: "User ID not provided.",
+      return res.status(403).json({
+        message: "Invalid or missing user ID! Please provide a valid ID.",
       });
     }
 

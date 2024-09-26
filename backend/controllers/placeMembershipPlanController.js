@@ -4,13 +4,19 @@ import membershipTypeSchema from "../models/membershipTypemodel.js";
 import user from "../models/usermodel.js";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
-import logger from "../logger/logger.js";
+import { mongoose as mongo } from "mongoose";
+
 export const membershipTypeModel = mongoose.model(
   "membershipType",
   membershipTypeSchema
 );
 export const membershipModell = mongoose.model("membership", membership);
 export const userModel = mongoose.model("user", user);
+
+//function to validate if a string is a valid MongoDB ObjectId or not
+const isValidObjectId = (id) => {
+  return mongo.Types.ObjectId.isValid(id);
+};
 
 const transporter = nodemailer.createTransport({
   service: "Gmail", // Use the appropriate email service
@@ -31,7 +37,6 @@ export async function activateMembership(req, res) {
   user.email = email;
   membershipTyp.payment = payment;
   console.log("mmmmmmm");
-
   // membershipTyp.startDate = new Date.now();
   // membershipTyp.endDate.setDate(membershipTyp.startDate.getDate() +membershipTyp.membershipType.duration);
 
@@ -53,10 +58,8 @@ export async function activateMembership(req, res) {
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error("Error sending email:", error);
-        logger.error("Error sending email");
       } else {
         console.log("Email sent:", info.response);
-        logger.info("Email sent");
       }
     });
     if (status != "active") {
@@ -87,33 +90,27 @@ export async function activateMembership(req, res) {
             };
 
             res.send(membershipModel);
-            logger.info("Membership created successfully");
           } catch (err) {
             console.log(err);
             res.status(500).json({ err });
-            logger.error("Error in creating Membership");
           }
         } else {
-          logger.error("Membership Type does not exist");
           return res.status(400).json({
             error: "Membership Type does not exist",
           });
         }
       } else {
-        logger.error("Payment not approved");
         return res.status(400).json({
           error: "Payment not approved",
         });
       }
     } else {
       console.log("already active");
-      logger.error("Membership already active");
       return res.status(400).json({
         error: "Membership already active",
       });
     }
   } catch (err) {
-    logger.error("Error in creating Membership");
     res.status(500).json({ error: "Something went wrong" });
   }
 }
@@ -122,6 +119,13 @@ export async function activateMembership(req, res) {
 export async function deactivateMemberShip(req, res) {
   const { id } = req.params;
 
+  // Validate the ID: ensure it's either a string or a valid ObjectId
+  if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+    return res.status(403).json({
+      message: "Invalid or missing user ID! Please provide a valid ID.",
+    });
+  }
+
   try {
     const membershipModel = await membershipModell.findOne({ _id: id });
 
@@ -129,22 +133,26 @@ export async function deactivateMemberShip(req, res) {
       membershipModel.status = "inactive";
       await membershipModel.save();
       res.send(membershipModel);
-      logger.info("Membership deactivated successfully");
     } else {
       res.status(400).json({ error: "Membership does not exist" });
-      logger.error("Membership does not exist");
     }
   } catch (err) {
     res.status(500).json({ error: "Something went wrong" });
-    logger.error("Error in deactivating Membership");
   }
 }
 
 // reactivate membership after deactivation
 export async function reactivateMembership(req, res) {
-  const { id } = req.params;
-
   try {
+    const { id } = req.params;
+
+    // Validate the ID: ensure it's either a string or a valid ObjectId
+    if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+      return res.status(403).json({
+        message: "Invalid or missing user ID! Please provide a valid ID.",
+      });
+    }
+
     const membershipModel = await membershipModell.findOne({ _id: id });
 
     if (membershipModel) {
@@ -153,27 +161,28 @@ export async function reactivateMembership(req, res) {
       res.send(membershipModel);
     } else {
       res.status(400).json({ error: "Membership does not exist" });
-      logger.error("Membership does not exist");
     }
   } catch (err) {
     res.status(500).json({ error: "Something went wrong" });
-    logger.error("Error in reactivating Membership");
   }
 }
 
 export async function getMembershipActivationDetails(req, res) {
-  console.log("aaaaaaaaaa");
-  const { email } = req.body;
-  console.log(email);
-  console.log(req.body);
-
   try {
+    const { email } = req.body;
+
+    // Validate the ID: ensure it's either a string or a valid ObjectId
+    if (!email || typeof email !== "string") {
+      return res.status(403).json({
+        message: "Invalid or missing user Email! Please provide a valid Email.",
+      });
+    }
+
     await membershipModell
       .findOne({ email: email })
       .then((data) => {
         console.log(data);
         res.send(data);
-        logger.info("Membership activation details fetched successfully");
         // if(membershipModel){
         //     res.send(membershipModel);
         // }else{
@@ -183,17 +192,13 @@ export async function getMembershipActivationDetails(req, res) {
       .catch((err) => {
         console.log(err);
         res.status(500).send({
-          message:
-            err.message || "Some error occurred while retrieving membership.",
+          message: "Some error occurred while retrieving membership.",
         });
-        logger.error("Error in fetching Membership activation details");
       });
   } catch (err) {
     console.log(err);
     res.status(500).send({
-      message:
-        err.message || "Some error occurred while retrieving membership.",
+      message: "Some error occurred while retrieving membership.",
     });
-    logger.error("Error in fetching Membership activation details");
   }
 }

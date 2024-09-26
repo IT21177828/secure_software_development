@@ -17,7 +17,7 @@ router.get(
     failureRedirect: "/login/failed",
   }),
   (req, res) => {
-    const userId = req.user._id;
+    const userId = req.user.user._id;
     res.redirect(`http://localhost:3000/dashboard/${userId}`);
   }
 );
@@ -34,7 +34,7 @@ router.get(
     failureRedirect: "/login/failed",
   }),
   (req, res) => {
-    const userId = req.user._id;
+    const userId = req.user.user._id;
     res.redirect(`http://localhost:3000/dashboard/${userId}`);
   }
 );
@@ -52,7 +52,7 @@ router.get(
     failureRedirect: "/login/failed",
   }),
   (req, res) => {
-    const userId = req.user._id;
+    const userId = req.user.user._id;
     res.redirect(`http://localhost:3000/dashboard/${userId}`);
   }
 );
@@ -64,6 +64,7 @@ router.post(
     failureRedirect: "/login/failed",
   }),
   (req, res) => {
+    console.log("camecallback")
     const userId = req.user._id;
     res.send(req.user);
   }

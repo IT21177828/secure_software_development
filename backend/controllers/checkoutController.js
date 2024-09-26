@@ -14,6 +14,7 @@ const getcheckout = (req, res) => {
     );
 };
 
+
 const createCheckout = async (req, res) => {
   try {
     // Extract data from the request body
@@ -37,6 +38,7 @@ const createCheckout = async (req, res) => {
     const cvvRegex = /^[0-9]{3,4}$/;
     if (!cvvRegex.test(cvv)) {
       logger.error("Invalid CVV");
+
       return res.status(400).json({ error: "Invalid CVV" });
     }
 

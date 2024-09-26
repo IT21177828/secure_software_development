@@ -6,16 +6,18 @@ import userSchema from "./models/usermodel.js";
 import mongoose from "./db/conn.js";
 import jwt from "jsonwebtoken";
 import { hashPasswordNew } from "./controllers/userController.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 export const User = mongoose.model("user", userSchema);
 
 const generateAccessToken = (user) => {
-  return jwt.sign({ email: user.email }, "secret_key", {
+  return jwt.sign({ email: user.email }, process.env.JWT_ACCESS_TOKEN_SECRET, {
     expiresIn: "58m",
   });
 };
 const generateRefreshToken = (user) => {
-  return jwt.sign({ email: user.email }, "refresh_secret_key", {
+  return jwt.sign({ email: user.email }, process.env.JWT_REFRESH_TOKEN_SECRET, {
     expiresIn: "58m",
   });
 };

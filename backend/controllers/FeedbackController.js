@@ -1,6 +1,13 @@
 import Feedback from "../models/FeedbackModel.js";
 import user from "../models/usermodel.js";
 import logger from "../logger/logger.js";
+import mongoose from "mongoose";
+
+//function to validate if a string is a valid MongoDB ObjectId or not
+const isValidObjectId = (id) => {
+  return mongoose.Types.ObjectId.isValid(id);
+};
+
 // Create feedback for translation
 const createFeedbackForTranslation = async (req, res) => {
   try {
@@ -42,6 +49,13 @@ const getFeedbackById = async (req, res) => {
   try {
     const userId = req.query.userId;
 
+    // Validate the ID: ensure it's either a string or a valid ObjectId
+    if (!userId || typeof userId !== "string" || !isValidObjectId(userId)) {
+      return res.status(403).json({
+        message: "Invalid or missing user ID! Please provide a valid ID.",
+      });
+    }
+
     if (!userId) {
       logger.error("User ID is required");
       return res.status(400).json({ message: "User ID is required" });
@@ -66,6 +80,13 @@ const getFeedbackById = async (req, res) => {
 const updateFeedbackById = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Validate the ID: ensure it's either a string or a valid ObjectId
+    if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+      return res.status(403).json({
+        message: "Invalid or missing user ID! Please provide a valid ID.",
+      });
+    }
     const { feedbackText } = req.body;
     const updatedFeedback = await Feedback.findByIdAndUpdate(
       id,
@@ -89,6 +110,12 @@ const updateFeedbackById = async (req, res) => {
 const deleteFeedbackById = async (req, res) => {
   try {
     const { id } = req.params;
+    // Validate the ID: ensure it's either a string or a valid ObjectId
+    if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+      return res.status(403).json({
+        message: "Invalid or missing user ID! Please provide a valid ID.",
+      });
+    }
     const deletedFeedback = await Feedback.findByIdAndRemove(id);
     if (!deletedFeedback) {
       logger.error("Feedback not found");

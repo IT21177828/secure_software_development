@@ -74,7 +74,7 @@ export default function Login() {
         .post(`${backendUrl}/auth/local/callback`, {
 
           email,
-          password:passwordHash,
+          password: passwordHash,
         })
         .then((res) => {
           console.log(res.data.user);

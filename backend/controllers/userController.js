@@ -2,10 +2,22 @@ import mongoose from "../db/conn.js";
 import userSchema from "../models/usermodel.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
 import logger from "../logger/logger.js";
+import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
+dotenv.config();
+
 let worstPasswords = [];
+
+const transporter = nodemailer.createTransport({
+    service: "Gmail", // Use the appropriate email service
+    auth: {
+      user: "bpathum@gmail.com", // Replace with your email address
+      pass: "pgfliawbkmllcenm", // Replace with your email password or an app-specific password
+    },
+  });
 
 export const userModel = mongoose.model("user", userSchema);
 
@@ -15,85 +27,76 @@ export function hashPasswordNew(password) {
     .toString(`hex`);
 }
 
-// Add new user with password strength check
 export async function registerUser(req, res) {
-  try {
-    worstPasswords = fs
-      .readFileSync(path.resolve("./worst-passwords.txt"), "utf-8")
-      .split("\n")
-      .map((password) => password.trim());
-    console.log("Worst passwords loaded successfully");
-    logger.info("Worst passwords loaded successfully");
-  } catch (error) {
-    console.error("Error reading worst-passwords.txt:", error);
-    logger.error("Error reading worst-passwords.txt:", error);
-    return res.status(500).send("Error loading worst passwords.");
+    try {
+      worstPasswords = fs
+        .readFileSync(path.resolve("./worst-passwords.txt"), "utf-8")
+        .split("\n")
+        .map((password) => password.trim());
+      console.log("Worst passwords loaded successfully");
+      logger.info("Worst passwords loaded successfully");
+    } catch (error) {
+      console.error("Error reading worst-passwords.txt:", error);
+      logger.error("Error reading worst-passwords.txt:", error);
+      return res.status(500).send("Error loading worst passwords.");
+    }
+  
+    const { firstName, lastName, email, passwordHash, gender, age, address } =
+      req.body;
+  
+    if (worstPasswords.includes(passwordHash)) {
+      logger.warn("User tried to use a weak password:", email);
+      return res.status(400).send("The password you entered is too weak.");
+    }
+  
+    let newUser = new userModel({
+      firstName,
+      lastName,
+      email,
+      passwordHash: hashPasswordNew(passwordHash),
+      gender,
+      age,
+      address,
+      userRole: userRole || 'client'  
+    });
+  
+    try {
+      const response = await newUser.save();
+      res
+        .status(201)
+        .json({ message: "User added successfully", user: response });
+      // Send confirmation email logic here...
+      logger.info("User added successfully:", email);
+    } catch (err) {
+      res.status(500).send(err);
+      console.log(err);
+      logger.error("Error adding user:", err);
+    }
   }
 
-  const { firstName, lastName, email, passwordHash, gender, age, address } =
-    req.body;
-
-  if (worstPasswords.includes(passwordHash)) {
-    logger.warn("User tried to use a weak password:", email);
-    return res.status(400).send("The password you entered is too weak.");
-  }
-
-  let newUser = new userModel({
-    firstName,
-    lastName,
-    email,
-    passwordHash: hashPasswordNew(passwordHash),
-    gender,
-    age,
-    address,
-    userRole: userRole || 'client'  
-  });
-
-  try {
-    const response = await newUser.save();
-    res
-      .status(201)
-      .json({ message: "User added successfully", user: response });
-    // Send confirmation email logic here...
-    logger.info("User added successfully:", email);
-  } catch (err) {
-    res.status(500).send(err);
-    console.log(err);
-    logger.error("Error adding user:", err);
-  }
-}
 
 // create an admin account
 export function adminAccount(req, res) {
-  // const { firstName, lastName, email, passwordHash, gender, age, address } = req.body;
-
   let newUser = new userModel();
   newUser.firstName = "admin";
   newUser.lastName = "superadmin";
-  newUser.email = "admin3@gmail.com";
+  newUser.email = "admin@gmail.com";
   newUser.passwordHash = hashPasswordNew("0000");
   newUser.gender = "---";
-  newUser.age = 12;
+  newUser.age = 20;
   newUser.address = "admin";
-  newUser.userRole = "admin";
-  newUser.providerId = "h";
-  newUser.provider="g";
-
 
   newUser
     .save()
     .then((response) => {
-      // res.send(response);
+      res.send(response);
       console.log("User added successfully");
-      logger.info("User added successfully:", email);
     })
     .catch((err) => {
-      // res.send(err);
       console.log(err);
-      logger.error("Error adding user:", err);
+      res.send("Something went wrong while adding user!");
     });
 }
-
 
 // login user
 
@@ -108,21 +111,30 @@ export function adminAccount(req, res) {
 //   });
 // };
 
-const generateAccessToken = (user) => {
-  console.log(user.userRole)
-  return jwt.sign({ email: user.email, role: user.userRole }, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE,
-  });
-};
+// login user
 
-const generateRefreshToken = (user) => {
-  return jwt.sign({ email: user.email, role: user.userRole }, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE,
-  });
-};
+const generateAccessToken = (user) => {
+    console.log(user.userRole)
+    return jwt.sign({ email: user.email, role: user.userRole }, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
+  };
+  
+  const generateRefreshToken = (user) => {
+    return jwt.sign({ email: user.email, role: user.userRole }, process.env.REFRESH_TOKEN_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
+  };
 
 const loginUser = (req, res) => {
   const { email, passwordHash } = req.body;
+
+  if (!email || !passwordHash) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+  if (typeof email !== "string" || typeof passwordHash !== "string") {
+    return res.status(400).json({ message: "Invalid input type!" });
+  }
 
   userModel
     .findOne({ email: email })
@@ -171,15 +183,23 @@ const loginUser = (req, res) => {
       }
     })
     .catch((err) => {
-      res.send(err);
       console.log(err);
       logger.error("Error logging in user:", err);
+      res.send("Something went wrong while login!");
     });
 };
 
 //get user details
 const userDetails = (req, res) => {
   const email = req.user.email;
+  console.log("firstHold", email);
+  if (!email) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+  if (typeof email !== "string") {
+    return res.status(400).json({ message: "Invalid input type!" });
+  }
+
   userModel
     .findOne({ email: email })
     .then((user) => {
@@ -197,9 +217,9 @@ const userDetails = (req, res) => {
       }
     })
     .catch((err) => {
-      res.send(err);
       console.log(err);
       logger.error("Error getting user details:", err);
+      res.send("Something went wrong while getting user details!");
     });
 };
 
@@ -218,74 +238,91 @@ export function checkAge(req, res) {
 }
 
 const verify = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+    const authHeader = req.headers.authorization;
+  
+    if (authHeader) {
+      const token = authHeader.split(" ")[1];
+  
+      jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+          logger.error("Token is not valid:", err);
+          return res.status(403).json("Token is not valid!");
+        }
+  
+        req.user = user;
+        next();
+      });
+    } else {
+      res.status(401).json("You are not authenticated");
+      logger.warn("User not authenticated:");
+    }
+  };
 
-  if (authHeader) {
-    const token = authHeader.split(" ")[1];
+let refreashTokens = [];
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+const refresh = (req, res) => {
+    const refreshToken = req.body.token;
+  
+    if (!refreshToken) {
+      logger.warn("You are not authenticated:", email);
+      return res.status(403).json("You are not authenticated!");
+    }
+  
+    if (!refreashTokens.includes(refreshToken)) {
+      logger.warn("Refresh Token Invalied:", email);
+      return res.status(403).json("Refresh Token Invalied!");
+    }
+  
+    jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET, (err, user) => {
+      err && console.log(err);
       if (err) {
         logger.error("Token is not valid:", err);
         return res.status(403).json("Token is not valid!");
       }
-
-      req.user = user;
-      next();
+      refreashTokens = refreashTokens.filter((token) => token !== refreshToken);
+  
+      const newA_token = generateAccessToken(user);
+      const newR_token = generateRefreshToken(user);
+  
+      refreashTokens.push(newR_token);
+      res.status(200).json({
+        accessToken: newA_token,
+        refreshToken: newR_token,
+      });
+      logger.info("Token refreshed successfully:", email);
     });
-  } else {
-    res.status(401).json("You are not authenticated");
-    logger.warn("User not authenticated:");
-  }
-};
-let refreashTokens = [];
+  };
 
-const refresh = (req, res) => {
-  const refreshToken = req.body.token;
-
-  if (!refreshToken) {
-    logger.warn("You are not authenticated:", email);
-    return res.status(403).json("You are not authenticated!");
-  }
-
-  if (!refreashTokens.includes(refreshToken)) {
-    logger.warn("Refresh Token Invalied:", email);
-    return res.status(403).json("Refresh Token Invalied!");
-  }
-
-  jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET, (err, user) => {
-    err && console.log(err);
-    if (err) {
-      logger.error("Token is not valid:", err);
-      return res.status(403).json("Token is not valid!");
+  const showName = (req, res) => {
+    console.log("auth work");
+    if (req.user.id === req.params.id || req.user.isAdmin) {
+      console.log("admin or user");
     }
-    refreashTokens = refreashTokens.filter((token) => token !== refreshToken);
+    res.send("hellooo");
+  };
 
-    const newA_token = generateAccessToken(user);
-    const newR_token = generateRefreshToken(user);
-
-    refreashTokens.push(newR_token);
-    res.status(200).json({
-      accessToken: newA_token,
-      refreshToken: newR_token,
-    });
-    logger.info("Token refreshed successfully:", email);
-  });
-};
-
-const showName = (req, res) => {
-  console.log("auth work");
-  if (req.user.id === req.params.id || req.user.isAdmin) {
-    console.log("admin or user");
-    logger.info("Admin or user:", email);
-  }
-  res.send("You can see this");
-  logger.info("User details sent successfully:", email);
-};
-
-export function updateUser(req, re) {
-  const { firstName, lastName, email, passwordHash, gender, age, address } =
-    req.body;
-}
+  const verifyAccessToken = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    console.log("This is auth header:")
+    console.log(authHeader)
+    if (authHeader) {
+      // const token = authHeader.split(" ")[1];
+      const token = authHeader;
+  
+      console.log("this is the token")
+      console.log(token)
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+        if (err) {
+          return res.status(403).json("Token is not valid!");
+        }
+        req.user = user;
+        console.log(user)
+        next();
+      });
+    } else {
+      res.status(401).json("You are not authenticated!");
+    }
+  };
 
 const verifyAdmin = (req, res, next) => {
   const user = req.user; // Assume req.user is populated by your authentication middleware
@@ -298,28 +335,7 @@ const verifyAdmin = (req, res, next) => {
     res.status(403).json({ message: 'Access denied. Admins only.' });
   }
 };
-const verifyAccessToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  console.log("This is auth header:")
-  console.log(authHeader)
-  if (authHeader) {
-    // const token = authHeader.split(" ")[1];
-    const token = authHeader;
 
-    console.log("this is the token")
-    console.log(token)
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-      if (err) {
-        return res.status(403).json("Token is not valid!");
-      }
-      req.user = user;
-      console.log(user)
-      next();
-    });
-  } else {
-    res.status(401).json("You are not authenticated!");
-  }
-};
 
 let refreshTokens = [];
 

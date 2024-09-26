@@ -13,6 +13,7 @@ badWordRouter.get("/", logRequestDetails, (req, res) => {
   console.log(filter.clean("Don't be a hank hell"));
 });
 
+
 badWordRouter.get("/all", logRequestDetails, userController.verifyAccessToken, userController.verifyAdmin, badWordController.index);
 badWordRouter.get(
   "/badpost",
@@ -25,7 +26,7 @@ badWordRouter.post(
   badWordController.checkBword,
   badWordController.store
 );
-badWordRouter.post("/a", logRequestDetails, badWordController.checkBword);
 badWordRouter.delete("/a", logRequestDetails, badWordController.remove);
+
 
 export default badWordRouter;

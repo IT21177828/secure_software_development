@@ -1,18 +1,6 @@
 import axios from "axios";
-import logger from "../logger/logger.js";
-//language
 
 const language = async (req, res) => {
-  // const options = {
-  //   method: "GET",
-  //   url: "https://google-translate1.p.rapidapi.com/language/translate/v2/languages",
-  //   headers: {
-  //     "Accept-Encoding": "application/gzip",
-  //     "X-RapidAPI-Key": "bc56163dedmsh5bde41c965bb45dp13112fjsn9b51e5a72802",
-  //     "X-RapidAPI-Host": "google-translate1.p.rapidapi.com",
-  //   },
-  // };
-
   const options = {
     method: "GET",
     url: "https://google-translator9.p.rapidapi.com/v2/languages",
@@ -25,7 +13,6 @@ const language = async (req, res) => {
 
   try {
     const response = await axios.request(options);
-    // console.log(response.data.data.languages);
 
     const languagesData = response.data.data;
 
@@ -34,38 +21,12 @@ const language = async (req, res) => {
     );
 
     res.status(200).json(mappedLanguages);
-    logger.info("Languages fetched successfully");
   } catch (error) {
-    console.error(error);
-    logger.error("Error fetching languages");
+    console.error(error.message);
   }
-
-  // const options = {
-  //   method: "GET",
-  //   headers: {
-  //     "X-RapidAPI-Key": process.env.RAPID_API_KEY,
-  //     "X-RapidAPI-Host": process.env.RAPID_API_HOST,
-  //   },
-  // };
-
-  // try {
-  //   const response = await axios(
-  //     "https://g-translate1.p.rapidapi.com/languages",
-  //     options
-  //   );
-
-  //   const arrayOfData = Object.keys(response.data.data).map(
-  //     (key) => response.data.data[key]
-  //   );
-  //   res.status(200).json(arrayOfData);
-  // } catch (err) {
-  //   console.log(err);
-  //   res.status(500).json({ message: err });
-  // }
 };
 
 //translation
-
 const translate =
   ("/translation",
   async (req, res) => {
@@ -84,18 +45,6 @@ const translate =
     encodedParams.set("target", outputLanguage);
     encodedParams.set("source", inputLanguage);
 
-    // const options = {
-    //   method: "POST",
-    //   url: "https://google-translate1.p.rapidapi.com/language/translate/v2",
-    //   headers: {
-    //     "content-type": "application/x-www-form-urlencoded",
-    //     "Accept-Encoding": "application/gzip",
-    //     "X-RapidAPI-Key": "bc56163dedmsh5bde41c965bb45dp13112fjsn9b51e5a72802",
-    //     "X-RapidAPI-Host": "google-translate1.p.rapidapi.com",
-    //   },
-    //   data: encodedParams,
-    // };
-
     const options = {
       method: "POST",
       url: "https://google-translator9.p.rapidapi.com/v2",
@@ -111,38 +60,9 @@ const translate =
     try {
       const response = await axios.request(options);
       res.status(201).json(response.data.data.translations[0].translatedText);
-      logger.info("Translation successful");
     } catch (error) {
-      console.error(error);
-      logger.error("Error in translation");
+      console.error(error.message);
     }
-    /*
-     */
-
-    // const options = {
-    //   method: "GET",
-    //   params: {
-    //     text: textToTranslate,
-    //     tl: outputLanguage,
-    //     sl: inputLanguage,
-    //   },
-    //   headers: {
-    //     "x-rapidapi-host": process.env.RAPID_API_HOST,
-    //     "x-rapidapi-key": process.env.RAPID_API_KEY,
-    //   },
-    // };
-
-    // try {
-    //   const response = await axios(
-    //     "https://g-translate1.p.rapidapi.com/translate",
-    //     options
-    //   );
-    //   console.log(response.data);
-    //   res.status(200).json(response.data);
-    // } catch (err) {
-    //   console.log(err);
-    //   res.status(500).json({ message: err });
-    // }
   });
 
 export default { language, translate };

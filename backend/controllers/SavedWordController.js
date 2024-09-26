@@ -1,15 +1,39 @@
 import SavedWordModel from "../models/SavedWordModel.js";
 import logger from "../logger/logger.js";
+import mongoose from "mongoose";
 // const getSavedWord = (req, res) => {
 //   SavedWordModel.find()
 //     .then((word) => res.json(word))
 //     .catch((err) => res.json(err));
 // };
 
+//function to validate if a string is a valid MongoDB ObjectId or not
+const isValidObjectId = (id) => {
+  return mongoose.Types.ObjectId.isValid(id);
+};
+
 const deleteSavedWord = (req, res) => {
-  SavedWordModel.findByIdAndDelete(req.params.id)
-    .then((word) => res.json(word), logger.info("Word deleted successfully"))
-    .catch((err) => res.json(err), logger.error("Error in deleting word"));
+  try {
+    const id = req.params.id;
+    // Validate the ID: ensure it's either a string or a valid ObjectId
+    if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+      return res.status(403).json({
+        message: "Invalid or missing user ID! Please provide a valid ID.",
+      });
+    }
+    SavedWordModel.findByIdAndDelete(id)
+      .then((word) => {
+        res.json(word);
+        logger.info("Word deleted successfully");
+      })
+      .catch((err) => {
+        res.json({ error: "Something went wrong while deleting word" });
+        logger.error("Error in deleting word");
+      });
+  } catch (error) {
+    res.status(500).json({ error: "Something went wrong while deleting word" });
+    logger.error("Error in deleting word");
+  }
 };
 
 // const clearAllData = (req, res) => {
@@ -47,9 +71,9 @@ const createSavedWord = async (req, res) => {
 };
 
 const deleteWord = async (req, res) => {
-  const { textToTranslate } = req.query; // Get textToTranslate from query parameters
-
   try {
+    const { textToTranslate } = req.query; // Get textToTranslate from query parameters
+
     // Find data based on textToTranslate
     const deletedData = await SavedWordModel.deleteMany({
       textToTranslate: { $regex: new RegExp(textToTranslate, "i") },
@@ -72,9 +96,15 @@ const deleteWord = async (req, res) => {
 };
 
 const getSavedWordExist = async (req, res) => {
-  const { textToTranslate } = req.body;
-
   try {
+    const { textToTranslate } = req.body;
+
+    if (!textToTranslate || typeof textToTranslate !== "string") {
+      return res
+        .status(400)
+        .json({ error: "Missing or invalid 'textToTranslate' parameter." });
+    }
+
     const word = await SavedWordModel.findOne({
       textToTranslate: { $regex: new RegExp(`^${textToTranslate}$`, "i") },
     });
@@ -99,16 +129,26 @@ const updateMessage = async (req, res) => {
   try {
     // Extract data from the request body
     const { message } = req.body;
+    const id = req.params.id;
+
+    // Validate the ID: ensure it's either a string or a valid ObjectId
+    if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+      return res.status(403).json({
+        message: "Invalid or missing user ID! Please provide a valid ID.",
+      });
+    }
 
     // Check if an 'id' parameter and 'message' are provided
-    if (!message) {
+    if (!message || typeof message !== "string") {
+      return res
+        .status(400)
+        .json({ error: "Missing OR invalid 'message' parameter." });
       logger.error("Missing 'message' parameter");
-      return res.status(400).json({ error: "Missing 'message' parameter." });
     }
 
     // Find the translation record by ID and update the 'message' field
     const updatedTranslation = await SavedWordModel.findByIdAndUpdate(
-      req.params.id,
+      id,
       { message },
       { new: true } // This option returns the updated document
     );
@@ -133,10 +173,11 @@ const getSavedWord = async (req, res) => {
     // Extract the user ID from the query parameters
     const id = req.query.user;
 
-    if (!id) {
-      logger.error("User ID not provided");
-      return res.status(400).json({
-        message: "User ID not provided.",
+    // Validate the ID: ensure it's either a string or a valid ObjectId
+    if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+      return res.status(403).json({
+        message: "Invalid or missing user ID! Please provide a valid ID.",
+        logger.error("User ID not provided");
       });
     }
 

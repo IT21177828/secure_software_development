@@ -2,7 +2,7 @@ import { Router } from "express";
 import passport from "passport";
 
 const router = Router();
-const CLIENT_URL = process.env.CLIENT_BASE_URL;
+const CLIENT_URL = "http://localhost:3000";
 
 // Google login
 router.get(
@@ -17,8 +17,8 @@ router.get(
     failureRedirect: "/login/failed",
   }),
   (req, res) => {
-    const userId = req.user._id;
-    res.redirect(`${CLIENT_URL}/dashboard/${userId}`);
+    const userId = req.user.user._id;
+    res.redirect(`http://localhost:3000/dashboard/${userId}`);
   }
 );
 
@@ -34,7 +34,7 @@ router.get(
     failureRedirect: "/login/failed",
   }),
   (req, res) => {
-    const userId = req.user._id;
+    const userId = req.user.user._id;
     res.redirect(`http://localhost:3000/dashboard/${userId}`);
   }
 );
@@ -52,8 +52,8 @@ router.get(
     failureRedirect: "/login/failed",
   }),
   (req, res) => {
-    const userId = req.user._id;
-    res.redirect(`${CLIENT_URL}/dashboard/${userId}`);
+    const userId = req.user.user._id;
+    res.redirect(`http://localhost:3000/dashboard/${userId}`);
   }
 );
 
@@ -64,6 +64,7 @@ router.post(
     failureRedirect: "/login/failed",
   }),
   (req, res) => {
+    console.log("camecallback")
     const userId = req.user._id;
     res.send(req.user);
   }

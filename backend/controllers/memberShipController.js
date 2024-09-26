@@ -1,6 +1,12 @@
 import mongoose from "../db/conn.js";
 import membershipTypeSchema from "../models/membershipTypemodel.js";
 import logger from "../logger/logger.js";
+import { mongoose as mongo } from "mongoose";
+
+//function to validate if a string is a valid MongoDB ObjectId or not
+const isValidObjectId = (id) => {
+  return mongo.Types.ObjectId.isValid(id);
+};
 
 export const membershipTypeModel = mongoose.model(
   "membershipType",
@@ -46,35 +52,49 @@ export function viewMembership(req, res) {
     .find(req.body)
     .then((result) => {
       res.send(result);
-      logger.info("Membership Type data fetched successfully");
+     logger.info("Membership Type data fetched successfully");
     })
     .catch((err) => {
       console.error(err); // Use console.error for error logging
       res.status(500).json({ message: "something wrong" });
-      logger.error("Error in fetching Membership Type data");
+    logger.error("Error in fetching Membership Type data");
     });
 }
 
+
 export function viewMembershipUsingId(req, res) {
+  const id = req.params.id;
+  // Validate the ID: ensure it's either a string or a valid ObjectId
+  if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+    return res.status(403).json({
+      message: "Invalid or missing user ID! Please provide a valid ID.",
+    });
+  }
   membershipTypeModel
-    .findById(req.params.id)
+    .findById(id)
     .then((result) => {
       res.send(result);
-      logger.info("Membership Type data fetched successfully");
     })
     .catch((err) => {
       console.error(err);
       res.status(500).json({ message: "Something went wrong" });
-      logger.error("Error in fetching Membership Type data");
     });
 }
 
 export function updateMembershipInfo(req, res) {
   const { name, price, description } = req.body;
+  const id = req.params.id;
+
+  // Validate the ID: ensure it's either a string or a valid ObjectId
+  if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+    return res.status(403).json({
+      message: "Invalid or missing user ID! Please provide a valid ID.",
+    });
+  }
 
   membershipTypeModel
     .updateOne(
-      { _id: req.params.id },
+      { _id: id },
       {
         $set: {
           name: name,
@@ -85,30 +105,43 @@ export function updateMembershipInfo(req, res) {
     )
     .then((result) => {
       res.send(result);
-      logger.info("Membership Type updated successfully");
     })
     .catch((err) => {
       console.log(err);
       res.status(500).json({ message: "Something went wrong" });
-      logger.error("Error in updating Membership Type");
     });
 }
 
 export function deleteMembership(req, res) {
-  membershipTypeModel
-    .deleteOne({ _id: req.params.id })
-    .then((result) => {
-      if (result.deletedCount === 0) {
-        res.status(404).json({ message: "Membership not found" });
-        logger.error("Membership Type not found");
-      } else {
-        res.send(result);
-        logger.info("Membership Type deleted successfully");
-      }
-    })
-    .catch((err) => {
-      console.error(err); // Log the error for debugging
-      res.status(500).json({ message: "Something went wrong" });
-      logger.error("Error in deleting Membership Type");
-    });
+  try {
+    const id = req.params.id;
+
+    // Validate the ID: ensure it's either a string or a valid ObjectId
+    if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+       logger.error("Membership id not found");
+      return res.status(403).json({
+        message: "Invalid or missing user ID! Please provide a valid ID.",
+      });
+    }
+
+    membershipTypeModel
+      .deleteOne({ _id: id })
+      .then((result) => {
+        if (result.deletedCount === 0) {
+          res.status(404).json({ message: "Membership not found" });
+        } else {
+          res.send(result);
+        }
+      })
+      .catch((err) => {
+        console.error(err); // Log the error for debugging
+        res.status(500).json({ message: "Something went wrong" });
+      });
+  } catch (error) {
+    console.log(error);
+    logger.error("Error in deleting Membership Type");
+    res
+      .status(500)
+      .json({ message: "Something went wrong while deleting membership" });
+  }
 }

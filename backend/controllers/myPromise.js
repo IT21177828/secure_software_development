@@ -9,7 +9,6 @@ function hide(word) {
 }
 
 export function myPromises(sentence) {
-  
   return new Promise((resolve, reject) => {
     try {
       const badWordsContainer = [];

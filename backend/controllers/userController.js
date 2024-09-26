@@ -3,6 +3,8 @@ import userSchema from "../models/usermodel.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+dotenv.config();
 
 const transporter = nodemailer.createTransport({
   service: "Gmail", // Use the appropriate email service
@@ -24,6 +26,18 @@ export function hashPasswordNew(password) {
 export function registerUser(req, res) {
   const { firstName, lastName, email, passwordHash, gender, age, address } =
     req.body;
+
+  if (
+    !firstName ||
+    !lastName ||
+    !email ||
+    !passwordHash ||
+    !gender ||
+    !age ||
+    !address
+  ) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
 
   let newUser = new userModel();
   newUser.firstName = firstName;
@@ -56,23 +70,20 @@ export function registerUser(req, res) {
       });
     })
     .catch((err) => {
-      res.send(err);
       console.log(err);
+      res.send("Something went wrong while adding user!");
     });
 }
 
 // create an admin account
 export function adminAccount(req, res) {
-  const { firstName, lastName, email, passwordHash, gender, age, address } =
-    req.body;
-
   let newUser = new userModel();
   newUser.firstName = "admin";
   newUser.lastName = "superadmin";
   newUser.email = "admin@gmail.com";
   newUser.passwordHash = hashPasswordNew("0000");
   newUser.gender = "---";
-  newUser.age = 12;
+  newUser.age = 20;
   newUser.address = "admin";
 
   newUser
@@ -82,26 +93,33 @@ export function adminAccount(req, res) {
       console.log("User added successfully");
     })
     .catch((err) => {
-      res.send(err);
       console.log(err);
+      res.send("Something went wrong while adding user!");
     });
 }
 
 // login user
 
 const generateAccessToken = (user) => {
-  return jwt.sign({ email: user.email }, "secret_key", {
+  return jwt.sign({ email: user.email }, process.env.JWT_ACCESS_TOKEN_SECRET, {
     expiresIn: "58m",
   });
 };
 const generateRefreshToken = (user) => {
-  return jwt.sign({ email: user.email }, "refresh_secret_key", {
+  return jwt.sign({ email: user.email }, process.env.JWT_REFRESH_TOKEN_SECRET, {
     expiresIn: "58m",
   });
 };
 
 const loginUser = (req, res) => {
   const { email, passwordHash } = req.body;
+
+  if (!email || !passwordHash) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+  if (typeof email !== "string" || typeof passwordHash !== "string") {
+    return res.status(400).json({ message: "Invalid input type!" });
+  }
 
   userModel
     .findOne({ email: email })
@@ -146,14 +164,22 @@ const loginUser = (req, res) => {
       }
     })
     .catch((err) => {
-      res.send(err);
       console.log(err);
+      res.send("Something went wrong while login!");
     });
 };
 
 //get user details
 const userDetails = (req, res) => {
   const email = req.user.email;
+  console.log("firstHold", email);
+  if (!email) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+  if (typeof email !== "string") {
+    return res.status(400).json({ message: "Invalid input type!" });
+  }
+
   userModel
     .findOne({ email: email })
     .then((user) => {
@@ -169,8 +195,8 @@ const userDetails = (req, res) => {
       }
     })
     .catch((err) => {
-      res.send(err);
       console.log(err);
+      res.send("Something went wrong while getting user details!");
     });
 };
 
@@ -192,7 +218,7 @@ const verify = (req, res, next) => {
   if (authHeader) {
     const token = authHeader.split(" ")[1];
 
-    jwt.verify(token, "secret_key", (err, user) => {
+    jwt.verify(token, process.env.JWT_ACCESS_TOKEN_SECRET, (err, user) => {
       if (err) {
         return res.status(403).json("Token is not valid!");
       }
@@ -215,19 +241,23 @@ const refresh = (req, res) => {
     return res.status(403).json("Refresh Token Invalied!");
   }
 
-  jwt.verify(refreshToken, "refresh_secret_key", (err, user) => {
-    err && console.log(err);
-    refreashTokens = refreashTokens.filter((token) => token !== refreshToken);
+  jwt.verify(
+    refreshToken,
+    process.env.JWT_REFRESH_TOKEN_SECRET,
+    (err, user) => {
+      err && console.log(err);
+      refreashTokens = refreashTokens.filter((token) => token !== refreshToken);
 
-    const newA_token = generateAccessToken(user);
-    const newR_token = generateRefreshToken(user);
+      const newA_token = generateAccessToken(user);
+      const newR_token = generateRefreshToken(user);
 
-    refreashTokens.push(newR_token);
-    res.status(200).json({
-      accessToken: newA_token,
-      refreshToken: newR_token,
-    });
-  });
+      refreashTokens.push(newR_token);
+      res.status(200).json({
+        accessToken: newA_token,
+        refreshToken: newR_token,
+      });
+    }
+  );
 };
 
 const showName = (req, res) => {
@@ -237,11 +267,6 @@ const showName = (req, res) => {
   }
   res.send("hellooo");
 };
-
-export function updateUser(req, re) {
-  const { firstName, lastName, email, passwordHash, gender, age, address } =
-    req.body;
-}
 
 export default {
   verify,

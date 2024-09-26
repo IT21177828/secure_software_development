@@ -71,7 +71,7 @@ export default function Login() {
       const response = await axios
         .post("http://localhost:5000/auth/local/callback", {
           email,
-          password:passwordHash,
+          password: passwordHash,
         })
         .then((res) => {
           console.log(res.data.user);

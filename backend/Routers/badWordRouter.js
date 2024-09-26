@@ -15,7 +15,6 @@ badWordRouter.get("/", (req, res) => {
 badWordRouter.get('/all', badWordController.index)
 badWordRouter.get('/badpost', badWordController.getAllBWordsById)
 badWordRouter.post('/word', badWordController.checkBword, badWordController.store)
-badWordRouter.post('/a',badWordController.checkBword)
-badWordRouter.delete('/a',badWordController.remove)
+badWordRouter.delete('/remove',badWordController.remove)
 
 export default badWordRouter;

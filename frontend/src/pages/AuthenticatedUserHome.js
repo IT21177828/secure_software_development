@@ -13,6 +13,7 @@ import HistoryFeature from "./features/HistoryFeature";
 import FavoriteFeatue from "./features/FavoriteFeatue";
 import SettingsFeature from "./features/SettingsFeature";
 import CloseBtn from "../utils/CloseBtn";
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 export default function AuthenticatedUserHome() {
   const navigate = useNavigate();
@@ -44,21 +45,19 @@ export default function AuthenticatedUserHome() {
 
   const getLanguages = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/translate/languages"
-      );
+      const response = await axios.get(`${backendUrl}/translate/languages`);
       setLanguages(response.data);
     } catch (error) {
       console.error(error);
     }
   };
   const logout = () => {
-    window.open("http://localhost:5000/auth/logout", "_self");
+    window.open(`${backendUrl}/auth/logout`, "_self");
   };
 
   const refreashToken = async () => {
     try {
-      const response = await axios.post("http://localhost:5000/user/refresh", {
+      const response = await axios.post(`${backendUrl}/user/refresh`, {
         token: user.refreashToken,
       });
 
@@ -81,7 +80,7 @@ export default function AuthenticatedUserHome() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/auth/login/success", {
+      .get(`${backendUrl}/auth/login/success`, {
         withCredentials: true,
       })
       .then((response) => {
@@ -120,7 +119,7 @@ export default function AuthenticatedUserHome() {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios
-        .post("http://localhost:5000/user/details", null, {
+        .post(`${backendUrl}/user/details`, null, {
           headers: {
             authorization: `Bearer ${token}`,
           },
@@ -146,7 +145,7 @@ export default function AuthenticatedUserHome() {
     try {
       console.log(email);
       await axios
-        .post("http://localhost:5000/membership/getMembershipDetails", {
+        .post(`${backendUrl}/membership/getMembershipDetails`, {
           email: email,
         })
         .then((res) => {
@@ -181,19 +180,16 @@ export default function AuthenticatedUserHome() {
       translatedText,
     };
     try {
-      const response = await axios.get(
-        "http://localhost:5000/translate/translation",
-        {
-          params: data,
-        }
-      );
+      const response = await axios.get(`${backendUrl}/translate/translation`, {
+        params: data,
+      });
 
       const name = user._id;
 
       console.log(user._id);
 
       const content = { name, textToTranslate };
-      await axios.post("http://localhost:5000/bad/word", {
+      await axios.post(`${backendUrl}/bad/word`, {
         params: content,
       });
 
@@ -216,7 +212,7 @@ export default function AuthenticatedUserHome() {
       console.log(resp);
       console.log("Translation data:", resp);
 
-      await axios.post("http://localhost:5000/history/save", resp);
+      await axios.post(`${backendUrl}/history/save`, resp);
       console.log("Translation data stored successfully");
     } catch (error) {
       console.error("Error storing translation data:", error);
@@ -275,7 +271,7 @@ export default function AuthenticatedUserHome() {
       console.log(user._id);
       const token = localStorage.getItem("accessToken");
       const response = await axios.post(
-        "http://localhost:5000/feedback/translation",
+        `${backendUrl}/feedback/translation`,
         feedbackData,
         {
           headers: {

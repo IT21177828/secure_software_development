@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import axios from "axios";
-
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 const FeedbackTable = () => {
   const [feedbackData, setFeedbackData] = useState([]);
   const [selectedFeedback, setSelectedFeedback] = useState(null);
@@ -25,7 +25,7 @@ const FeedbackTable = () => {
   const fetchUserData = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const res = await axios.post("http://localhost:5000/user/details", null, {
+      const res = await axios.post(`${backendUrl}/user/details`, null, {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -44,7 +44,7 @@ const FeedbackTable = () => {
   const getData = async () => {
     const token = localStorage.getItem("accessToken");
     const userId = user._id;
-    const url = `http://localhost:5000/feedback/user?userId=${userId}`;
+    const url = `${backendUrl}/feedback/user?userId=${userId}`;
     axios
       .get(url, {
         headers: {
@@ -65,7 +65,7 @@ const FeedbackTable = () => {
   const confirmDelete = () => {
     const token = localStorage.getItem("accessToken");
     axios
-      .delete(`http://localhost:5000/feedback/delete/${selectedFeedback}`, {
+      .delete(`${backendUrl}/feedback/delete/${selectedFeedback}`, {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -97,7 +97,7 @@ const FeedbackTable = () => {
     const token = localStorage.getItem("accessToken");
     axios
       .put(
-        `http://localhost:5000/feedback/update/${selectedFeedback._id}`,
+        `${backendUrl}/feedback/update/${selectedFeedback._id}`,
         {
           feedbackText: updatedFeedback,
         },

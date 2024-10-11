@@ -2,7 +2,7 @@ import React from "react";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 export default function PremiumFeature() {
   const [membership, SetMembership] = useState([]);
   //   const history = useHistory();
@@ -10,7 +10,7 @@ export default function PremiumFeature() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/membershipType/view")
+      .get(`${backendUrl}/membershipType/view`)
       .then((result) => SetMembership(result.data))
       .catch((err) => console.log(err));
   }, []);

@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import session from "express-session"; // Switch to express-session
 import passport from "passport";
 import Stripe from "stripe";
-
+import { logRequestDetails } from "./middleware/loggerMiddleware.js";
 import userRouter from "./Routers/userRouter.js";
 import membershipRouter from "./Routers/memberShipRouter.js";
 import membershipTypeRouter from "./Routers/membershipTypeRouter.js";
@@ -23,19 +23,17 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 const app = express();
 
-const allowedOrigins = ['http://localhost:3000', 'http://example.com'];
+const allowedOrigins = ["http://localhost:3000", "http://example.com"];
 
 const corsOptions = (req, callback) => {
   let corsOptions;
-  const origin = req.header('Origin');
-  console.log({"origin":origin})
-  
+  const origin = req.header("Origin");
+  console.log({ origin: origin });
   if (allowedOrigins.includes(origin)) {
     corsOptions = { origin: origin, credentials: true }; // Reflect the request origin in the CORS response
   } else {
     corsOptions = { origin: false }; // Disable CORS for this request
   }
-  
   callback(null, corsOptions); // Pass the corsOptions object to the middleware
 };
 
@@ -67,6 +65,9 @@ app.use(express.json());
 
 // Serve static files (if needed)
 app.use(express.static("public"));
+
+// Apply the logging middleware globally
+app.use(logRequestDetails);
 
 // API Routes
 app.use("/auth", authRoute);

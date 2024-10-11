@@ -1,5 +1,6 @@
 import mongoose from "../db/conn.js";
 import membershipTypeSchema from "../models/membershipTypemodel.js";
+import logger from "../logger/logger.js";
 import { mongoose as mongo } from "mongoose";
 
 //function to validate if a string is a valid MongoDB ObjectId or not
@@ -29,6 +30,7 @@ export async function createMembership(req, res) {
     });
 
     if (existingMembershipTypeModel) {
+      logger.error("Membership Type already exists");
       return res.status(400).json({
         error: "Membership Type already exists",
       });
@@ -36,9 +38,11 @@ export async function createMembership(req, res) {
       // No existing membership type with the same name, proceed to save
       await membershipType.save();
       res.send(membershipType);
+      logger.info("Membership Type created successfully");
     }
   } catch (err) {
     res.status(500).json({ error: "Something went wrong" });
+    logger.error("Error in creating Membership Type");
   }
 }
 
@@ -48,12 +52,15 @@ export function viewMembership(req, res) {
     .find(req.body)
     .then((result) => {
       res.send(result);
+     logger.info("Membership Type data fetched successfully");
     })
     .catch((err) => {
       console.error(err); // Use console.error for error logging
       res.status(500).json({ message: "something wrong" });
+    logger.error("Error in fetching Membership Type data");
     });
 }
+
 
 export function viewMembershipUsingId(req, res) {
   const id = req.params.id;
@@ -111,6 +118,7 @@ export function deleteMembership(req, res) {
 
     // Validate the ID: ensure it's either a string or a valid ObjectId
     if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+       logger.error("Membership id not found");
       return res.status(403).json({
         message: "Invalid or missing user ID! Please provide a valid ID.",
       });
@@ -131,6 +139,7 @@ export function deleteMembership(req, res) {
       });
   } catch (error) {
     console.log(error);
+    logger.error("Error in deleting Membership Type");
     res
       .status(500)
       .json({ message: "Something went wrong while deleting membership" });

@@ -1,4 +1,3 @@
-# Secure Software Development
 ### Members and thir index numbers
 - Herath R.P.N.M - IT21177828
 - Arachchi D.S.U - IT21182914
@@ -12,7 +11,6 @@ Repo URL: https://github.com/IT21177828/SPM_SEES_Translator
 Repo URL: https://github.com/IT21177828/secure_software_development
 
 ### Youtube video
-URL: 
-
+URL: https://www.youtube.com/watch?v=QpgFu3q1elQ
 
 Last updated on - Oct 17, 2023

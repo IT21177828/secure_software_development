@@ -18,12 +18,13 @@ import UpdateMemberShip from "./pages/admin/UpdateMembership";
 import { useEffect, useState } from "react";
 import AuthenticatedUserHome from "./pages/AuthenticatedUserHome";
 
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 const App = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     const getUser = () => {
-      fetch("http://localhost:5000/auth/login/success", {
+      fetch(`${backendUrl}/auth/login/success`, {
         method: "GET",
         credentials: "include",
         headers: {
@@ -49,7 +50,11 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="/" exact element={<Translate />} />
-        <Route path="/dashboard/:id" exact element={<AuthenticatedUserHome />} />
+        <Route
+          path="/dashboard/:id"
+          exact
+          element={<AuthenticatedUserHome />}
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/feedback" element={<FeedbackTable />} />
         <Route path="/register" element={<Registration />} />

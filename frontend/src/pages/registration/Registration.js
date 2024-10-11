@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FaGoogle, FaGithub, FaFacebook } from "react-icons/fa"; // Import icons
-
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 export default function Registration() {
   const [firstName, setFname] = useState("");
   const [lastName, setLname] = useState("");
@@ -17,15 +17,15 @@ export default function Registration() {
   const navigate = useNavigate();
 
   const google = () => {
-    window.open("http://localhost:5000/auth/google", "_self");
+    window.open(`${backendUrl}/auth/google`, "_self");
   };
 
   const github = () => {
-    window.open("http://localhost:5000/auth/github", "_self");
+    window.open(`${backendUrl}/auth/github`, "_self");
   };
 
   const facebook = () => {
-    window.open("http://localhost:5000/auth/facebook", "_self");
+    window.open(`${backendUrl}/auth/facebook`, "_self");
   };
 
   const handleSubmit = async (e) => {
@@ -37,7 +37,7 @@ export default function Registration() {
     }
     try {
       console.log("heeee" + gender);
-      const response = await axios.post("http://localhost:5000/user", {
+      const response = await axios.post(`${backendUrl}/user`, {
         firstName,
         lastName,
         email,
@@ -49,7 +49,7 @@ export default function Registration() {
       console.log(response);
       navigate("/login");
     } catch (error) {
-      setError("Error with registration");
+      setError(error.response.data);
       console.log(error);
     }
   };

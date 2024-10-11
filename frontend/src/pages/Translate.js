@@ -13,7 +13,7 @@ import HistoryFeature from "./features/HistoryFeature";
 import FavoriteFeatue from "./features/FavoriteFeatue";
 import SettingsFeature from "./features/SettingsFeature";
 import CloseBtn from "../utils/CloseBtn";
-
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 export default function Translate() {
   const navigate = useNavigate();
   const selected =
@@ -44,9 +44,7 @@ export default function Translate() {
 
   const getLanguages = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/translate/languages"
-      );
+      const response = await axios.get(`${backendUrl}/translate/languages`);
       setLanguages(response.data);
     } catch (error) {
       console.error(error);
@@ -55,7 +53,7 @@ export default function Translate() {
 
   const refreashToken = async () => {
     try {
-      const response = await axios.post("http://localhost:5000/user/refresh", {
+      const response = await axios.post(`${backendUrl}/user/refresh`, {
         token: user.refreashToken,
       });
 
@@ -96,7 +94,7 @@ export default function Translate() {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios
-        .post("http://localhost:5000/user/details", null, {
+        .post(`${backendUrl}/user/details`, null, {
           headers: {
             authorization: `Bearer ${token}`,
           },
@@ -122,7 +120,7 @@ export default function Translate() {
     try {
       console.log(email);
       await axios
-        .post("http://localhost:5000/membership/getMembershipDetails", {
+        .post(`${backendUrl}/membership/getMembershipDetails`, {
           email: email,
         })
         .then((res) => {
@@ -157,19 +155,16 @@ export default function Translate() {
       translatedText,
     };
     try {
-      const response = await axios.get(
-        "http://localhost:5000/translate/translation",
-        {
-          params: data,
-        }
-      );
+      const response = await axios.get(`${backendUrl}/translate/translation`, {
+        params: data,
+      });
 
       const name = user._id;
 
       console.log(user._id);
 
       const content = { name, textToTranslate };
-      await axios.post("http://localhost:5000/bad/word", {
+      await axios.post(`${backendUrl}/bad/word`, {
         params: content,
       });
 
@@ -192,7 +187,7 @@ export default function Translate() {
       console.log(resp);
       console.log("Translation data:", resp);
 
-      await axios.post("http://localhost:5000/history/save", resp);
+      await axios.post(`${backendUrl}/history/save`, resp);
       console.log("Translation data stored successfully");
     } catch (error) {
       console.error("Error storing translation data:", error);
@@ -251,7 +246,7 @@ export default function Translate() {
       console.log(user._id);
       const token = localStorage.getItem("accessToken");
       const response = await axios.post(
-        "http://localhost:5000/feedback/translation",
+        `${backendUrl}/feedback/translation`,
         feedbackData,
         {
           headers: {
@@ -289,7 +284,10 @@ export default function Translate() {
       <header className="absolute z-50 bg-gray-900 w-full float-right p-4 flex justify-between items-center md:px-8">
         <div className="flex items-center">
           <img
-            src="https://firebasestorage.googleapis.com/v0/b/translator-spm.appspot.com/o/userImg.png?alt=media&token=21e4bdb5-afe8-440d-a448-67edadb3b63a" // Replace with your user icon URL
+            src={
+              user.photo ||
+              "https://firebasestorage.googleapis.com/v0/b/translator-spm.appspot.com/o/userImg.png?alt=media&token=21e4bdb5-afe8-440d-a448-67edadb3b63a"
+            } // Replace with your user icon URL
             alt="User Icon"
             className="w-8 h-8 rounded-full mr-2"
           />

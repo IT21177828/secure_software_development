@@ -3,11 +3,11 @@ import axios from "axios";
 const language = async (req, res) => {
   const options = {
     method: "GET",
-    url: "https://google-translate1.p.rapidapi.com/language/translate/v2/languages",
+    url: "https://google-translator9.p.rapidapi.com/v2/languages",
     headers: {
       "Accept-Encoding": "application/gzip",
       "X-RapidAPI-Key": "cee2294232mshc5d1c380d8f1993p19cf0ejsn4dc41c1849fe",
-      "X-RapidAPI-Host": "google-translate1.p.rapidapi.com",
+      "X-RapidAPI-Host": "google-translator9.p.rapidapi.com",
     },
   };
 
@@ -47,12 +47,12 @@ const translate =
 
     const options = {
       method: "POST",
-      url: "https://google-translate1.p.rapidapi.com/language/translate/v2",
+      url: "https://google-translator9.p.rapidapi.com/v2",
       headers: {
         "content-type": "application/x-www-form-urlencoded",
         "Accept-Encoding": "application/gzip",
         "X-RapidAPI-Key": "cee2294232mshc5d1c380d8f1993p19cf0ejsn4dc41c1849fe",
-        "X-RapidAPI-Host": "google-translate1.p.rapidapi.com",
+        "X-RapidAPI-Host": "google-translator9.p.rapidapi.com",
       },
       data: encodedParams,
     };

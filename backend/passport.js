@@ -12,12 +12,12 @@ dotenv.config();
 export const User = mongoose.model("user", userSchema);
 
 const generateAccessToken = (user) => {
-  return jwt.sign({ email: user.email }, process.env.JWT_ACCESS_TOKEN_SECRET, {
+  return jwt.sign({ email: user.email }, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: "58m",
   });
 };
 const generateRefreshToken = (user) => {
-  return jwt.sign({ email: user.email }, process.env.JWT_REFRESH_TOKEN_SECRET, {
+  return jwt.sign({ email: user.email }, process.env.REFRESH_TOKEN_SECRET, {
     expiresIn: "58m",
   });
 };
@@ -87,6 +87,7 @@ passport.use(
             email: profile?.emails[0].value,
             provider: "google",
             providerId: profile.id,
+            photo: profile.photos[0].value,
           });
           await user.save();
         }
@@ -130,6 +131,7 @@ passport.use(
             email: profile.emails[0].value,
             provider: "facebook",
             providerId: profile.id,
+            photo: profile.photos[0].value,
             isOAuthUser: true,
           });
           await user.save();

@@ -3,6 +3,7 @@ import axios from "axios";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 export default function UpdateMemberShip() {
   const [membership, setMembership] = useState([]);
   const [formData, setFormData] = useState({
@@ -26,7 +27,7 @@ export default function UpdateMemberShip() {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/membershipType/view/${id}`
+          `${backendUrl}/membershipType/view/${id}`
         );
         setFormData(response.data);
       } catch (error) {
@@ -46,7 +47,7 @@ export default function UpdateMemberShip() {
 
     // Send a POST request to your API to add the new membership plan
     axios
-      .post("http://localhost:5000/membershipType/", formData)
+      .post(`${backendUrl}/membershipType/`, formData)
       .then((result) => {
         // Update the state or perform any other necessary actions
         setMembership([...membership, result.data]);

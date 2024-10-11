@@ -23,19 +23,17 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 const app = express();
 
-const allowedOrigins = ['http://localhost:3000', 'http://example.com'];
+const allowedOrigins = ["http://localhost:3000", "http://example.com"];
 
 const corsOptions = (req, callback) => {
   let corsOptions;
-  const origin = req.header('Origin');
-  console.log({"origin":origin})
-  
+  const origin = req.header("Origin");
+  console.log({ origin: origin });
   if (allowedOrigins.includes(origin)) {
     corsOptions = { origin: origin, credentials: true }; // Reflect the request origin in the CORS response
   } else {
     corsOptions = { origin: false }; // Disable CORS for this request
   }
-  
   callback(null, corsOptions); // Pass the corsOptions object to the middleware
 };
 

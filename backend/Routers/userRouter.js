@@ -9,7 +9,12 @@ import { registerUser, checkAge } from "../controllers/userController.js";
 import { logRequestDetails } from "../middleware/loggerMiddleware.js";
 
 userRouter.post("/", logRequestDetails, registerUser);
-userRouter.post("/login", logRequestDetails, userController.loginUser);
+userRouter.post(
+  "/login",
+  userController.loginLimiter,
+  logRequestDetails,
+  userController.loginUser
+);
 userRouter.get("/checkAge", logRequestDetails, checkAge);
 
 userRouter.post(

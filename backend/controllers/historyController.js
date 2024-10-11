@@ -17,12 +17,14 @@ const deleteHistory = (req, res) => {
     });
   }
   HistoryModel.findByIdAndDelete(id)
-    .then((history) => res.json(history).
-    logger.info("History deleted successfully")
-  )
-    .catch((err) => res.json(err),
-    logger.error("History not found")
-  );
+    .then((history) => {
+      logger.info("History deleted successfully");
+      res.json(history);
+    })
+    .catch((err) => {
+      logger.error("History not found");
+      res.json("error", "History not found");
+    });
 };
 
 const clearAllData = (req, res) => {

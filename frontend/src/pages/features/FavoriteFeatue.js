@@ -83,18 +83,16 @@ const FavoriteFeatue = (userId) => {
     return () => clearInterval(intervalId); // Clean up the interval when the component unmounts
   }, []);
 
-  const handleDelete = (textToTranslate) => {
+  const handleDelete = (textToTranslate, id) => {
     // Show a confirmation dialog
     const confirmation = window.confirm(
-      "Are you sure you want to delete this item?"
+      `Are you sure you want to delete this item? ${textToTranslate}`
     );
 
     if (confirmation) {
       // User clicked "OK," proceed with the deletion
       axios
-        .delete(
-          `${backendUrl}/savedWord/delete?textToTranslate=${textToTranslate}`
-        )
+        .delete(`${backendUrl}/savedWord/deleteSavedWord/${id}`)
         .then((res) => {
           console.log(res);
           // Remove the deleted item from the local state
@@ -141,7 +139,9 @@ const FavoriteFeatue = (userId) => {
                 <div className="text-x1 bg-blue-600 text-black p-1 rounded dark:text-white">
                   {item.inputLanguage} <span>&rarr;</span> {item.outputLanguage}
                 </div>
-                <div onClick={() => handleDelete(item.textToTranslate)}>
+                <div
+                  onClick={() => handleDelete(item.textToTranslate, item._id)}
+                >
                   <span
                     role="img"
                     aria-label="Filled Star"

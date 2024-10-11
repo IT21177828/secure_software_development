@@ -9,47 +9,44 @@ const __dirname = path.dirname(__filename);
 
 // Create a daily rotate file transport for info logs (includes info and warn levels)
 const infoTransport = new DailyRotateFile({
-  filename: path.join(__dirname, "logs", "info-%DATE%.log"), // Log file location
-  datePattern: "YYYY-MM-DD", // Daily log rotation
-  zippedArchive: true, // Optional: Zip log files
-  maxSize: "20m", // Maximum size of each log file
-  maxFiles: "14d", // Keep logs for 14 days
-  level: "info", // Capture 'info' and 'warn' level logs
+  filename: path.join(__dirname, "logs", "info-%DATE%.log"),
+  datePattern: "YYYY-MM-DD",
+  zippedArchive: true,
+  maxSize: "20m",
+  maxFiles: "14d",
+  level: "info",
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.printf(({ timestamp, level, message }) => {
-      return `[${timestamp}] ${level.toUpperCase()}: ${message}`; // Unstructured log format
+      return `[${timestamp}] ${level.toUpperCase()}: ${message}`;
     })
   ),
 });
 
 // Create a daily rotate file transport for error logs (only errors)
 const errorTransport = new DailyRotateFile({
-  filename: path.join(__dirname, "logs", "error-%DATE%.log"), // Log file location
-  datePattern: "YYYY-MM-DD", // Daily log rotation
-  zippedArchive: true, // Optional: Zip log files
-  maxSize: "20m", // Maximum size of each log file
-  maxFiles: "14d", // Keep logs for 14 days
-  level: "error", // Only capture 'error' level logs
+  filename: path.join(__dirname, "logs", "error-%DATE%.log"),
+  datePattern: "YYYY-MM-DD",
+  zippedArchive: true,
+  maxSize: "20m",
+  maxFiles: "14d",
+  level: "error",
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.printf(({ timestamp, level, message }) => {
-      return `[${timestamp}] ${level.toUpperCase()}: ${message}`; // Unstructured log format
+      return `[${timestamp}] ${level.toUpperCase()}: ${message}`;
     })
   ),
 });
 
 // Create the logger
 const logger = winston.createLogger({
-  level: "info", // Minimum level of logging (this affects console or other transports if added)
+  level: "info",
   format: winston.format.combine(
-    winston.format.timestamp(), // Add timestamp to logs
-    winston.format.simple() // Use simple format
+    winston.format.timestamp(),
+    winston.format.simple()
   ),
-  transports: [
-    infoTransport, // Add info transport (logs info and warn)
-    errorTransport, // Add error transport (logs errors only)
-  ],
+  transports: [infoTransport, errorTransport],
 });
 
 // Export the logger

@@ -15,6 +15,7 @@ const isValidObjectId = (id) => {
 const deleteSavedWord = (req, res) => {
   try {
     const id = req.params.id;
+    console.log(id);
     // Validate the ID: ensure it's either a string or a valid ObjectId
     if (!id || typeof id !== "string" || !isValidObjectId(id)) {
       return res.status(403).json({
@@ -97,7 +98,7 @@ const deleteWord = async (req, res) => {
 
 const getSavedWordExist = async (req, res) => {
   try {
-    const { textToTranslate } = req.body;
+    const { textToTranslate } = req.query;
 
     if (!textToTranslate || typeof textToTranslate !== "string") {
       return res
@@ -175,9 +176,9 @@ const getSavedWord = async (req, res) => {
 
     // Validate the ID: ensure it's either a string or a valid ObjectId
     if (!id || typeof id !== "string" || !isValidObjectId(id)) {
+      logger.error("User ID not provided");
       return res.status(403).json({
         message: "Invalid or missing user ID! Please provide a valid ID.",
-        logger.error("User ID not provided");
       });
     }
 

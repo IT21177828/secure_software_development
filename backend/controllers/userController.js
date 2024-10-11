@@ -1,4 +1,5 @@
 import mongoose from "../db/conn.js";
+import rateLimit from "express-rate-limit";
 import userSchema from "../models/usermodel.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
@@ -12,14 +13,27 @@ dotenv.config();
 let worstPasswords = [];
 
 const transporter = nodemailer.createTransport({
-    service: "Gmail", // Use the appropriate email service
-    auth: {
-      user: "bpathum@gmail.com", // Replace with your email address
-      pass: "pgfliawbkmllcenm", // Replace with your email password or an app-specific password
-    },
-  });
+  service: "Gmail", // Use the appropriate email service
+  auth: {
+    user: "bpathum@gmail.com", // Replace with your email address
+    pass: "pgfliawbkmllcenm", // Replace with your email password or an app-specific password
+  },
+});
 
 export const userModel = mongoose.model("user", userSchema);
+
+// Login rate limiter
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+  message: "Too many login attempts. Please try again later.",
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: function (req, res) {
+    res.status(429).json({ message: "Too many login attempts." });
+    logger.warn(`Too many login attempts: ${req.body.email}`);
+  },
+});
 
 export function hashPasswordNew(password) {
   return crypto
@@ -27,53 +41,63 @@ export function hashPasswordNew(password) {
     .toString(`hex`);
 }
 
+// Add new user with password strength check
 export async function registerUser(req, res) {
-    try {
-      worstPasswords = fs
-        .readFileSync(path.resolve("./worst-passwords.txt"), "utf-8")
-        .split("\n")
-        .map((password) => password.trim());
-      console.log("Worst passwords loaded successfully");
-      logger.info("Worst passwords loaded successfully");
-    } catch (error) {
-      console.error("Error reading worst-passwords.txt:", error);
-      logger.error("Error reading worst-passwords.txt:", error);
-      return res.status(500).send("Error loading worst passwords.");
-    }
-  
-    const { firstName, lastName, email, passwordHash, gender, age, address } =
-      req.body;
-  
-    if (worstPasswords.includes(passwordHash)) {
-      logger.warn("User tried to use a weak password:", email);
-      return res.status(400).send("The password you entered is too weak.");
-    }
-  
-    let newUser = new userModel({
-      firstName,
-      lastName,
-      email,
-      passwordHash: hashPasswordNew(passwordHash),
-      gender,
-      age,
-      address,
-      userRole: userRole || 'client'  
-    });
-  
-    try {
-      const response = await newUser.save();
-      res
-        .status(201)
-        .json({ message: "User added successfully", user: response });
-      // Send confirmation email logic here...
-      logger.info("User added successfully:", email);
-    } catch (err) {
-      res.status(500).send(err);
-      console.log(err);
-      logger.error("Error adding user:", err);
-    }
+  try {
+    worstPasswords = fs
+      .readFileSync(path.resolve("./worst-passwords.txt"), "utf-8")
+      .split("\n")
+      .map((password) => password.trim());
+    console.log("Worst passwords loaded successfully");
+    logger.info("Worst passwords loaded successfully");
+  } catch (error) {
+    console.error("Error reading worst-passwords.txt:", error);
+    logger.error("Error reading worst-passwords.txt:", error);
+    return res.status(500).send("Error loading worst passwords.");
   }
 
+  const {
+    firstName,
+    lastName,
+    email,
+    passwordHash,
+    gender,
+    age,
+    address,
+    provider,
+    providerId,
+  } = req.body;
+
+  if (worstPasswords.includes(passwordHash)) {
+    logger.warn("User tried to use a weak password:", email);
+    return res.status(400).send("The password you entered is too weak.");
+  }
+
+  let newUser = new userModel({
+    firstName,
+    lastName,
+    email,
+    passwordHash: hashPasswordNew(passwordHash),
+    gender,
+    age,
+    address,
+    provider,
+    providerId,
+  });
+
+  try {
+    const response = await newUser.save();
+    res
+      .status(201)
+      .json({ message: "User added successfully", user: response });
+    // Send confirmation email logic here...
+    logger.info("User added successfully:", email);
+  } catch (err) {
+    res.status(500).send(err);
+    console.log(err);
+    logger.error("Error adding user:", err);
+  }
+}
 
 // create an admin account
 export function adminAccount(req, res) {
@@ -114,17 +138,25 @@ export function adminAccount(req, res) {
 // login user
 
 const generateAccessToken = (user) => {
-    console.log(user.userRole)
-    return jwt.sign({ email: user.email, role: user.userRole }, process.env.ACCESS_TOKEN_SECRET, {
+  console.log(user.userRole);
+  return jwt.sign(
+    { email: user.email, role: user.userRole },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
       expiresIn: process.env.JWT_EXPIRE,
-    });
-  };
-  
-  const generateRefreshToken = (user) => {
-    return jwt.sign({ email: user.email, role: user.userRole }, process.env.REFRESH_TOKEN_SECRET, {
+    }
+  );
+};
+
+const generateRefreshToken = (user) => {
+  return jwt.sign(
+    { email: user.email, role: user.userRole },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
       expiresIn: process.env.JWT_EXPIRE,
-    });
-  };
+    }
+  );
+};
 
 const loginUser = (req, res) => {
   const { email, passwordHash } = req.body;
@@ -146,10 +178,10 @@ const loginUser = (req, res) => {
           user.email === "admin@gmail.com" &&
           user.passwordHash === hashPasswordNew("0000")
         ) {
-          console.log("hii")
+          console.log("hii");
           const A_token = generateAccessToken(user);
           const R_token = generateRefreshToken(user);
-          console.log(A_token)
+          console.log(A_token);
           // req.session.userId = response._id;
 
           refreashTokens.push(R_token);
@@ -238,104 +270,103 @@ export function checkAge(req, res) {
 }
 
 const verify = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-  
-    if (authHeader) {
-      const token = authHeader.split(" ")[1];
-  
-      jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-          logger.error("Token is not valid:", err);
-          return res.status(403).json("Token is not valid!");
-        }
-  
-        req.user = user;
-        next();
-      });
-    } else {
-      res.status(401).json("You are not authenticated");
-      logger.warn("User not authenticated:");
-    }
-  };
+  const authHeader = req.headers.authorization;
 
-let refreashTokens = [];
+  if (authHeader) {
+    const token = authHeader.split(" ")[1];
 
-const refresh = (req, res) => {
-    const refreshToken = req.body.token;
-  
-    if (!refreshToken) {
-      logger.warn("You are not authenticated:", email);
-      return res.status(403).json("You are not authenticated!");
-    }
-  
-    if (!refreashTokens.includes(refreshToken)) {
-      logger.warn("Refresh Token Invalied:", email);
-      return res.status(403).json("Refresh Token Invalied!");
-    }
-  
-    jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET, (err, user) => {
-      err && console.log(err);
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
       if (err) {
         logger.error("Token is not valid:", err);
         return res.status(403).json("Token is not valid!");
       }
-      refreashTokens = refreashTokens.filter((token) => token !== refreshToken);
-  
-      const newA_token = generateAccessToken(user);
-      const newR_token = generateRefreshToken(user);
-  
-      refreashTokens.push(newR_token);
-      res.status(200).json({
-        accessToken: newA_token,
-        refreshToken: newR_token,
-      });
-      logger.info("Token refreshed successfully:", email);
+
+      req.user = user;
+      next();
     });
-  };
-
-  const showName = (req, res) => {
-    console.log("auth work");
-    if (req.user.id === req.params.id || req.user.isAdmin) {
-      console.log("admin or user");
-    }
-    res.send("hellooo");
-  };
-
-  const verifyAccessToken = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    console.log("This is auth header:")
-    console.log(authHeader)
-    if (authHeader) {
-      // const token = authHeader.split(" ")[1];
-      const token = authHeader;
-  
-      console.log("this is the token")
-      console.log(token)
-      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-        if (err) {
-          return res.status(403).json("Token is not valid!");
-        }
-        req.user = user;
-        console.log(user)
-        next();
-      });
-    } else {
-      res.status(401).json("You are not authenticated!");
-    }
-  };
-
-const verifyAdmin = (req, res, next) => {
-  const user = req.user; // Assume req.user is populated by your authentication middleware
-  console.log(user)
-  console.log(user.role)
-
-  if (user && user.role === 'admin') {
-    next(); // User is admin, proceed to the next middleware/route handler
   } else {
-    res.status(403).json({ message: 'Access denied. Admins only.' });
+    res.status(401).json("You are not authenticated");
+    logger.warn("User not authenticated:");
   }
 };
 
+let refreashTokens = [];
+
+const refresh = (req, res) => {
+  const refreshToken = req.body.token;
+
+  if (!refreshToken) {
+    logger.warn("You are not authenticated:", email);
+    return res.status(403).json("You are not authenticated!");
+  }
+
+  if (!refreashTokens.includes(refreshToken)) {
+    logger.warn("Refresh Token Invalied:", email);
+    return res.status(403).json("Refresh Token Invalied!");
+  }
+
+  jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET, (err, user) => {
+    err && console.log(err);
+    if (err) {
+      logger.error("Token is not valid:", err);
+      return res.status(403).json("Token is not valid!");
+    }
+    refreashTokens = refreashTokens.filter((token) => token !== refreshToken);
+
+    const newA_token = generateAccessToken(user);
+    const newR_token = generateRefreshToken(user);
+
+    refreashTokens.push(newR_token);
+    res.status(200).json({
+      accessToken: newA_token,
+      refreshToken: newR_token,
+    });
+    logger.info("Token refreshed successfully:", email);
+  });
+};
+
+const showName = (req, res) => {
+  console.log("auth work");
+  if (req.user.id === req.params.id || req.user.isAdmin) {
+    console.log("admin or user");
+  }
+  res.send("hellooo");
+};
+
+const verifyAccessToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  console.log("This is auth header:");
+  console.log(authHeader);
+  if (authHeader) {
+    // const token = authHeader.split(" ")[1];
+    const token = authHeader;
+
+    console.log("this is the token");
+    console.log(token);
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+      if (err) {
+        return res.status(403).json("Token is not valid!");
+      }
+      req.user = user;
+      console.log(user);
+      next();
+    });
+  } else {
+    res.status(401).json("You are not authenticated!");
+  }
+};
+
+const verifyAdmin = (req, res, next) => {
+  const user = req.user; // Assume req.user is populated by your authentication middleware
+  console.log(user);
+  console.log(user.role);
+
+  if (user && user.role === "admin") {
+    next(); // User is admin, proceed to the next middleware/route handler
+  } else {
+    res.status(403).json({ message: "Access denied. Admins only." });
+  }
+};
 
 let refreshTokens = [];
 
@@ -349,7 +380,8 @@ const refreshAccessToken = (req, res) => {
   }
 
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-    if (err) return res.status(403).json("Refresh token is not valid or expired!");
+    if (err)
+      return res.status(403).json("Refresh token is not valid or expired!");
 
     refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
 
@@ -371,9 +403,10 @@ export default {
   showName,
   loginUser,
   userDetails,
+  loginLimiter,
   generateAccessToken,
   generateRefreshToken,
   verifyAdmin,
   refreshAccessToken,
-  verifyAccessToken
+  verifyAccessToken,
 };

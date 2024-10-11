@@ -61,29 +61,34 @@ const store = (req, res) => {
 
 //detect Bad word
 const checkBword = (req, res, next) => {
-  const phase = req.body.params.textToTranslate;
+  try {
+    const phase = req.body.params.textToTranslate;
 
-  if (!phase || typeof phase !== "string") {
-    return res.status(403).json({
-      message:
-        "Invalid or missing text for identify badword! Please provide a valid text.",
-    });
+    if (!phase || typeof phase !== "string") {
+      return res.status(403).json({
+        message:
+          "Invalid or missing text for identify badword! Please provide a valid text.",
+      });
+    }
+    myPromises(phase)
+      .then((result) => {
+        if (result.hasBadWords) {
+          logger.warn("Bad word detected in the text:", phase);
+          next();
+        } else {
+          res.send(result);
+          logger.info("No bad words detected in the text:", phase);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        logger.error("Error checking bad words:", err);
+        res.status(400).send("Error occured While checking bad word!");
+      });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send("Error occured While checking bad word!");
   }
-  myPromises(phase)
-    .then((result) => {
-      if (result.hasBadWords) {
-        logger.warn("Bad word detected in the text:", phase);
-        next();
-      } else{
-      res.send(result);
-      logger.info("No bad words detected in the text:", phase);
-      } 
-    })
-    .catch((err) => {
-      console.log(err);
-      logger.error("Error checking bad words:", err);
-      res.status(400).send("Error occured While checking bad word!");
-    });
 };
 
 const remove = (req, res) => {

@@ -69,10 +69,8 @@ export default function Login() {
     console.log(backendUrl);
     try {
       const response = await axios
-      
 
         .post(`${backendUrl}/auth/local/callback`, {
-
           email,
           password: passwordHash,
         })
@@ -100,7 +98,7 @@ export default function Login() {
             navigate("/adminController");
           } else {
             console.log("i am user");
-            navigate("/dashboard/" + newUser.user._id);
+            navigate("/");
           }
         });
     } catch (error) {

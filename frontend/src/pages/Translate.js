@@ -284,7 +284,10 @@ export default function Translate() {
       <header className="absolute z-50 bg-gray-900 w-full float-right p-4 flex justify-between items-center md:px-8">
         <div className="flex items-center">
           <img
-            src="https://firebasestorage.googleapis.com/v0/b/translator-spm.appspot.com/o/userImg.png?alt=media&token=21e4bdb5-afe8-440d-a448-67edadb3b63a" // Replace with your user icon URL
+            src={
+              user.photo ||
+              "https://firebasestorage.googleapis.com/v0/b/translator-spm.appspot.com/o/userImg.png?alt=media&token=21e4bdb5-afe8-440d-a448-67edadb3b63a"
+            } // Replace with your user icon URL
             alt="User Icon"
             className="w-8 h-8 rounded-full mr-2"
           />

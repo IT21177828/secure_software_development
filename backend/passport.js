@@ -71,7 +71,7 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "/auth/google/callback",
-      scope: ["profile", "email"],
+      // scope: ["profile", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -117,26 +117,50 @@ passport.use(
       clientID: process.env.FACEBOOK_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
       callbackURL: "/auth/facebook/callback",
+      scope: ["email"],
+      profileFields: ["id", "emails", "name", "photos"],
     },
     async (accessToken, refreshToken, profile, done) => {
+      console.log(profile);
+
       try {
+        const email =
+          profile.emails && profile.emails.length > 0
+            ? profile.emails[0].value
+            : null;
+        const photo =
+          profile.photos && profile.photos.length > 0
+            ? profile.photos[0].value
+            : null;
+
         let user = await User.findOne({
           providerId: profile.id,
           provider: "facebook",
         });
+
         if (!user) {
           user = new User({
+            email: email || "noemail@gmail.com",
             firstName: profile.name.givenName,
             lastName: profile.name.familyName,
-            email: profile.emails[0].value,
             provider: "facebook",
             providerId: profile.id,
-            photo: profile.photos[0].value,
+            photo: photo,
             isOAuthUser: true,
           });
+
           await user.save();
         }
-        return done(null, user);
+        const A_token = generateAccessToken(user);
+        const R_token = generateRefreshToken(user);
+        
+        const userDetails = {
+          user: user,
+          accessToken: A_token,
+          refreshToken: R_token,
+        };
+
+        return done(null, userDetails);
       } catch (err) {
         return done(err);
       }
@@ -151,6 +175,7 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser(async (data, done) => {
   try {
     console.log(data.user);
+    console.log(data);
     const id = data.user._id;
     const userDetail = await User.findById(id);
     const user = {

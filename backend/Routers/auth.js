@@ -25,7 +25,7 @@ router.get(
 // Facebook login
 router.get(
   "/facebook",
-  passport.authenticate("facebook", { scope: ["email", "profile"] })
+  passport.authenticate("facebook", { scope: ["email", "public_profile"] })
 );
 // Facebook authentication callback
 router.get(
@@ -64,7 +64,7 @@ router.post(
     failureRedirect: "/login/failed",
   }),
   (req, res) => {
-    console.log("camecallback")
+    console.log("camecallback");
     const userId = req.user._id;
     res.send(req.user);
   }
